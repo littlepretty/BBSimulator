@@ -1,30 +1,25 @@
 #!/usr/bin/python
 
-class BBTimeStamp(object):
+from enum import Enum
+
+class BBJobTimeStamp(object):
     """
     Timing statistics
     """
     def __init__(self, submit):
         super(BBTimeStamp, self).__init__()
-        self.submit = submit
-        # update when job goes into input queue
-        self.waiting_in = 0
-        # update when job goes into running queue
-        self.waiting_run = 0
-        # update when job goes into out queue
-        self.waiting_out = 0
-        # wait = in + run + out
-        self.wating = 0
-        # transfer_in = data_in / bw
-        self.transfer_in = 0
-        self.running = 0
-        self.transfer_out = 0
-        # finish = submit + wait + transfer in/out + running
-        self.finish = 0
-        # response = finish - submit 
-        self.response = 0
+        self.submit = submit # when job goes into input queue
+        self.start_in = 0
+        self.finish_in = 0 # when job goes into run queue  
+        self.start_run = 0
+        self.finish_run = 0 # when job goes into out queue 
+        self.start_out = 0
+        self.finish_out = 0
 
-class BBDemand(object):
+        self.response = self.finish_out - self.submitted
+
+
+class BBJobDemand(object):
     """
     Demand statistics
     """
@@ -37,18 +32,24 @@ class BBDemand(object):
         self.data_in = data_in
         self.data_out = data_out
 
-status_str = ['SUBMITTED', 'STAGE_IN', 'STAGE_OUT', 'RUNNING', 'FINISHED']
+class BBJobStatus(Enum):
+    WaitInput = 1
+    Inputing = 2
+    WaitRun = 3
+    Running = 4
+    WaitOut = 5
+    Outputing = 6
 
 class BBJob(object):
     """
     Jobs with burst buffer demand
     """
-    def __init__(self, job_id, timestamp, demand):
+    def __init__(self, job_id, ts, demand):
         super(BBJob, self).__init__()
         self.job_id = job_id
-        self.timestamp = timestamp
+        self.ts = ts
         self.demand = demand
-        self.status = 'SUBMITTED'
+        self.status = BBJobStatus.WaitInput
 
 
 
