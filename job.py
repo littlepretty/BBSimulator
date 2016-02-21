@@ -1,55 +1,87 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 from enum import Enum
+import logging
+
 
 class BBJobTimeStamp(object):
-    """
-    Timing statistics
-    """
+    """timing statistics"""
     def __init__(self, submit):
-        super(BBTimeStamp, self).__init__()
-        self.submit = submit # when job goes into input queue
-        self.start_in = 0
-        self.finish_in = 0 # when job goes into run queue  
-        self.start_run = 0
-        self.finish_run = 0 # when job goes into out queue 
-        self.start_out = 0
-        self.finish_out = 0
-
-        self.response = self.finish_out - self.submitted
+        super(BBJobTimeStamp, self).__init__()
+        self.submit = float(submit)  # when job goes into input queue
+        self.start_in = 0.0
+        self.finish_in = 0.0  # when job goes into run queue
+        self.start_run = 0.0
+        self.finish_run = 0.0  # when job goes into out queue
+        self.start_out = 0.0
+        self.finish_out = 0.0
 
 
 class BBJobDemand(object):
-    """
-    Demand statistics
-    """
-    def __init__(self, num_core, bb_in, bb, data_in, data_out):
-        super(BBDemand, self).__init__()
-        self.num_core = num_core
-        self.bb_in = bb_in
-        self.bb = bb
+    """demand statistics"""
+    def __init__(self, num_core, bb_in, bb, data_out):
+        super(BBJobDemand, self).__init__()
+        self.num_core = float(num_core)
+        self.bb_in = float(bb_in)
+        self.bb = float(bb)
         # additional trace data
-        self.data_in = data_in
-        self.data_out = data_out
+        self.data_in = float(bb_in)
+        self.data_out = float(data_out)
+
 
 class BBJobStatus(Enum):
+    """job status"""
     WaitInput = 1
     Inputing = 2
     WaitRun = 3
     Running = 4
-    WaitOut = 5
+    WaitOutput = 5
     Outputing = 6
+    Complete = 7
+
 
 class BBJob(object):
-    """
-    Jobs with burst buffer demand
-    """
-    def __init__(self, job_id, ts, demand):
+    """jobs with burst buffer demand"""
+    def __init__(self, job_id, submit, demand, rt):
         super(BBJob, self).__init__()
         self.job_id = job_id
+        ts = BBJobTimeStamp(submit)
         self.ts = ts
         self.demand = demand
+        self.runtime = float(rt)
         self.status = BBJobStatus.WaitInput
 
+    def jobStatus(self):
+        if self.status == BBJobStatus.WaitInput:
+            return 'Wait Input'
+        elif self.status == BBJobStatus.Inputing:
+            return 'Inputing'
+        elif self.status == BBJobStatus.WaitRun:
+            return 'Wait Run'
+        elif self.status == BBJobStatus.Running:
+            return 'Running'
+        elif self.status == BBJobStatus.WaitOutput:
+            return 'Wait Out'
+        elif self.status == BBJobStatus.Outputing:
+            return 'Outputing'
+        else:
+            return 'Complete'
 
+    def __str__(self):
+        return ' job_%d[%s]' % (self.job_id, self.jobStatus())
 
+    def finishSummary(self, now):
+        logging.info('[%7.2f] %s' % (now, self.__str__()))
+        if self.status == BBJobStatus.Complete:
+            waiting_in = self.ts.start_in - self.ts.submit
+            waiting_run = self.ts.start_run - self.ts.finish_in
+            waiting_out = self.ts.start_out - self.ts.finish_run
+            response = self.ts.finish_out - self.ts.submit
+            summary = '\n' + '-' * 59
+            summary += "\n job id | wait_in | wait_run | wait_out | response"
+            summary += "\n%7d | %7.2f | %7.2f | %7.2f | %7.2f\n" % \
+                (self.job_id, waiting_in, waiting_run,
+                 waiting_out, response)
+            summary += '-' * 59
+            logging.info(summary)
+            return summary
