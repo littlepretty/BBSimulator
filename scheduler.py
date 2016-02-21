@@ -3,6 +3,7 @@
 import logging
 from job import BBJobStatus
 from simulator import BBEvent, BBEventType
+from tabulate import tabulate
 
 
 class BBResource(object):
@@ -47,6 +48,7 @@ class BBScheduler(object):
         self.input_q = []
         self.run_q = []
         self.output_q = []
+        self.complete_q = []
 
     def insertToInputQ(self, job, now):
         job.status = BBJobStatus.WaitInput
@@ -66,7 +68,22 @@ class BBScheduler(object):
     def insertToCompleteQ(self, job, now):
         job.status = BBJobStatus.Complete
         self.bb.available += job.demand.bb
-        job.finishSummary(now)
+        self.complete_q.append(job)
+
+    def dumpJobSummary(self):
+        table = []
+        first_row = ['job id', 'submit', 'wait_in', 'input',
+                     'wait_run', 'run', 'wait_out',
+                     'output', 'complete', 'total_wait',
+                     'response']
+        table.append(first_row)
+        self.complete_q.sort(key=lambda job: job.job_id)
+        for job in self.complete_q:
+            if job.status == BBJobStatus.Complete:
+                statistic = job.dumpTimeStatistic()
+                table.append(statistic)
+        logging.info('\n%s' % tabulate(table, headers="firstrow",
+                                        tablefmt='fancy_grid'))
 
     def scheduleStageIn(self):
         "return jobs with status inputing"
@@ -128,7 +145,7 @@ class BBScheduler(object):
         jobs.extend(job_runs)
         jobs.extend(job_outs)
         for job in jobs:
-            logging.debug(' [%7.2d] Schedule %s' %
+            logging.debug('\t [%7.2d] Schedule %s' %
                           (now, str(job)))
         return jobs
 
@@ -173,8 +190,8 @@ class BBScheduler(object):
                 evt = self.generateFinishOutput(job)
                 events.append(evt)
             else:
-                logging.warn(' Unable to generate events for job')
+                logging.warn('\t Unable to generate events for job')
 
         for evt in events:
-            logging.debug(' Generate %s' % str(evt))
+            logging.debug('\t Generate %s' % str(evt))
         return events

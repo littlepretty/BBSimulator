@@ -68,20 +68,20 @@ class BBJob(object):
             return 'Complete'
 
     def __str__(self):
-        return ' job_%d[%s]' % (self.job_id, self.jobStatus())
+        return ' job_%d [%s]' % (self.job_id, self.jobStatus())
 
-    def finishSummary(self, now):
-        logging.info('[%7.2f] %s' % (now, self.__str__()))
+    def dumpTimeStatistic(self):
         if self.status == BBJobStatus.Complete:
+            submit = self.ts.submit
             waiting_in = self.ts.start_in - self.ts.submit
             waiting_run = self.ts.start_run - self.ts.finish_in
             waiting_out = self.ts.start_out - self.ts.finish_run
-            response = self.ts.finish_out - self.ts.submit
-            summary = '\n' + '-' * 59
-            summary += "\n job id | wait_in | wait_run | wait_out | response"
-            summary += "\n%7d | %7.2f | %7.2f | %7.2f | %7.2f\n" % \
-                (self.job_id, waiting_in, waiting_run,
-                 waiting_out, response)
-            summary += '-' * 59
-            logging.info(summary)
-            return summary
+            inputing = self.ts.finish_in - self.ts.start_in
+            running = self.ts.finish_run - self.ts.start_run
+            outputing = self.ts.finish_out - self.ts.start_out
+            complete = self.ts.finish_out
+            total_wait = waiting_in + waiting_run + waiting_out
+            response = complete - submit
+            return [self.job_id, submit, waiting_in, inputing,
+                    waiting_run, running, waiting_out, outputing,
+                    complete, total_wait, response]

@@ -5,6 +5,7 @@ import logging
 
 
 class BBEventType(Enum):
+    """Possible event types"""
     Submitted = 1
     FinishIn = 2
     FinishRun = 3
@@ -76,7 +77,7 @@ class BBSimulator(object):
 
         # handle events based on type
         for evt in events:
-            logging.info(' Handle %s' % str(evt))
+            logging.debug('\t Handle %s' % str(evt))
             if evt.evt_type == BBEventType.Submitted:
                 self.scheduler.insertToInputQ(evt.job, now)
             elif evt.evt_type == BBEventType.FinishIn:
@@ -86,7 +87,7 @@ class BBSimulator(object):
             elif evt.evt_type == BBEventType.FinishOut:
                 self.scheduler.insertToCompleteQ(evt.job, now)
             else:
-                logging.warn(' Unable to handle event %s' % str(evt))
+                logging.warn('\t Unable to handle event %s' % str(evt))
         jobs = self.scheduler.schedule(now)
         if jobs:
             new_events = self.scheduler.generateEvents(jobs)
@@ -98,3 +99,5 @@ class BBSimulator(object):
         while len(self.event_q) > 0:
             evts = self.nextEvents()
             self.handleEvents(evts)
+
+        self.scheduler.dumpJobSummary()
