@@ -28,6 +28,10 @@ class BBJobDemand(object):
         self.data_in = float(bb_in)
         self.data_out = float(data_out)
 
+    def __str__(self):
+        return "dv = [%d cores, %.2f in_buffer, %.2f buffer, %.2f out_data]" % \
+            (self.num_core, self.bb_in, self.bb, self.data_out)
+
 
 class BBJobStatus(Enum):
     """job status"""
@@ -68,7 +72,8 @@ class BBJob(object):
             return 'Complete'
 
     def __str__(self):
-        return ' job_%d [%s]' % (self.job_id, self.jobStatus())
+        return 'job_%d, %s [%s]' % (self.job_id,
+                                     self.demand, self.jobStatus())
 
     def dumpTimeStatistic(self):
         if self.status == BBJobStatus.Complete:

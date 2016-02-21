@@ -94,10 +94,15 @@ class BBSimulator(object):
             for evt in new_events:
                 self.event_q.append(evt)
 
+    def dumpEventQueue(self):
+        logging.debug('\t Dump event queue')
+        for evt in self.event_q:
+            logging.debug('\t ' + str(evt))
+
     def simulateCore(self):
         """keep popping events and handle them"""
         while len(self.event_q) > 0:
             evts = self.nextEvents()
             self.handleEvents(evts)
-
+        self.dumpEventQueue()
         self.scheduler.dumpJobSummary()
