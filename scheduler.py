@@ -45,13 +45,37 @@ class BBIo(BBResource):
         self.to_bb = float(to_bb)
 
 
-class BBScheduler(object):
-    """3 phase scheduler"""
-    def __init__(self, cpu, bb, io):
-        super(BBScheduler, self).__init__()
+class BBSystem(object):
+    def __init__(self, cpu, io):
+        super(BBSystem, self).__init__()
         self.cpu = cpu
-        self.bb = bb
         self.io = io
+
+    def __str__(self):
+        cap = 'System capacity: %d cpu, %.2f GBps IO' % \
+            (self.cpu.capacity, self.io.to_cpu)
+        available = 'System availability: %d cpu' % self.cpu.available
+        return cap + '\n' + available
+
+
+class BBSystemBurstBuffer(BBSystem):
+    def __init__(self, cpu, bb, io):
+        super(BBSystemBurstBuffer, self).__init__(cpu, io)
+        self.bb = bb
+
+    def __str__(self):
+        cap = 'System capacity: %d cpu, %.2f GB burst buffer, %.2f GBps IO' \
+            % (self.cpu.capacity, self.bb.capacity, self.io.to_cpu)
+        available = 'System availability: %d cpu, %.2f GB burst buffer' \
+            % (self.cpu.available, self.bb.available)
+        return cap + '\n' + available
+
+
+class BBSchedulerBase(object):
+    """3 phase scheduler"""
+    def __init__(self, system):
+        super(BBSchedulerBase, self).__init__()
+        self.system = system
         self.input_q = []
         self.run_q = []
         self.output_q = []
@@ -75,9 +99,7 @@ class BBScheduler(object):
 
     def dumpResource(self):
         logging.debug('\t Dump resources')
-        logging.debug('\t ' + str(self.cpu))
-        logging.debug('\t ' + str(self.bb))
-        logging.debug('\t ' + str(self.io))
+        logging.debug('\t ' + str(self.system))
 
     def insertToInputQ(self, job, now):
         job.status = BBJobStatus.WaitInput
@@ -85,17 +107,15 @@ class BBScheduler(object):
 
     def insertToRunQ(self, job, now):
         job.status = BBJobStatus.WaitRun
-        self.bb.available += job.demand.bb_in
         self.run_q.append(job)
 
     def insertToOutputQ(self, job, now):
         job.status = BBJobStatus.WaitOutput
-        self.cpu.available += job.demand.num_core
+        self.system.cpu.available += job.demand.num_core
         self.output_q.append(job)
 
     def insertToCompleteQ(self, job, now):
         job.status = BBJobStatus.Complete
-        self.bb.available += job.demand.bb
         self.complete_q.append(job)
 
     def dumpJobSummary(self):
@@ -114,37 +134,28 @@ class BBScheduler(object):
                                        tablefmt='fancy_grid'))
 
     def scheduleStageIn(self):
-        "return jobs with status inputing"
+        """return all jobs in input queue"""
         jobs = []
-        # sort descendingly, max data throughput
-        # sort ascendingly, max parallelism
-        self.input_q.sort(key=lambda job: job.demand.bb_in)
-        while len(self.input_q) > 0 and \
-                self.bb.available >= self.input_q[0].demand.bb_in:
+        while len(self.input_q) > 0:
             job = self.input_q.pop(0)
-            self.bb.available -= job.demand.bb_in
             jobs.append(job)
         return jobs
 
     def scheduleRun(self):
-        "return jobs with status running"
+        """FIFO as long as there are cpu available"""
         jobs = []
-        self.run_q.sort(key=lambda job: job.demand.num_core)
         while len(self.run_q) > 0 and \
-                self.cpu.available >= self.run_q[0].demand.num_core:
+                self.system.cpu.available > self.run_q[0].demand.num_core:
             job = self.run_q.pop(0)
-            self.cpu.available -= job.demand.num_core
+            self.system.cpu.available -= job.demand.num_core
             jobs.append(job)
         return jobs
 
     def scheduleStageOut(self):
-        "return jobs with status outputing"
+        """return all jobs in output queue"""
         jobs = []
-        self.output_q.sort(key=lambda job: job.demand.bb)
-        while len(self.output_q) > 0 and \
-                self.bb.available >= self.output_q[0].demand.bb:
+        while len(self.output_q) > 0:
             job = self.output_q.pop(0)
-            self.bb.available -= job.demand.bb
             jobs.append(job)
         return jobs
 
@@ -188,46 +199,85 @@ class BBScheduler(object):
     def schedule(self, now):
         return self.scheduleCore(now)
 
-    def generateSubmittedEvents(self, job):
-        evt = BBEvent(job, job.ts.submit, BBEventType.Submitted)
-        return evt
 
-    def generateFinishInput(self, job):
-        input_dur = job.demand.data_in / self.io.to_bb
-        job.ts.finish_in = job.ts.start_in + input_dur
-        evt = BBEvent(job, job.ts.finish_in, BBEventType.FinishIn)
-        return evt
+class BBSchedulerDirectIO(BBSchedulerBase):
+    def __init__(self, system):
+        super(BBSchedulerDirectIO, self).__init__(system)
 
-    def generateFinishRun(self, job):
-        job.ts.finish_run = job.ts.start_run + job.runtime
-        evt = BBEvent(job, job.ts.finish_run, BBEventType.FinishRun)
-        return evt
+    def scheduleRun(self):
+        "return jobs with status running"
+        jobs = []
+        # sort descendingly, max cpu utilization
+        # sort ascendingly, max parallelism
+        self.run_q.sort(key=lambda job: job.demand.num_core)
+        while len(self.run_q) > 0 and \
+                self.system.cpu.available >= self.run_q[0].demand.num_core:
+            job = self.run_q.pop(0)
+            self.system.cpu.available -= job.demand.num_core
+            jobs.append(job)
+        return jobs
 
-    def generateFinishOutput(self, job):
-        output_dur = job.demand.data_out / self.bb.to_io
-        job.ts.finish_out = job.ts.start_out + output_dur
-        evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
-        return evt
 
-    def generateEvents(self, jobs):
-        """generate new events based on schedule results"""
-        events = []
-        for job in jobs:
-            if job.status == BBJobStatus.WaitInput:
-                evt = self.generateSubmittedEvents(job)
-                events.append(evt)
-            elif job.status == BBJobStatus.Inputing:
-                evt = self.generateFinishInput(job)
-                events.append(evt)
-            elif job.status == BBJobStatus.Running:
-                evt = self.generateFinishRun(job)
-                events.append(evt)
-            elif job.status == BBJobStatus.Outputing:
-                evt = self.generateFinishOutput(job)
-                events.append(evt)
-            else:
-                logging.warn('\t Unable to generate events for job')
+class BBSchedulerViaBurstBuffer(BBSchedulerBase):
+    def __init__(self, system):
+        super(BBSchedulerViaBurstBuffer, self).__init__(system)
 
-        for evt in events:
-            logging.debug('\t Generate %s' % str(evt))
-        return events
+    def insertToRunQ(self, job, now):
+        job.status = BBJobStatus.WaitRun
+        self.system.bb.available += job.demand.bb_in
+        self.run_q.append(job)
+
+    def insertToCompleteQ(self, job, now):
+        job.status = BBJobStatus.Complete
+        self.system.bb.available += job.demand.bb
+        self.complete_q.append(job)
+
+    def scheduleStageIn(self):
+        "return jobs s.t. max|jobs| with bb constraint"
+        jobs = []
+        # sort descendingly, max data throughput
+        # sort ascendingly, max parallelism
+        self.input_q.sort(key=lambda job: job.demand.bb_in)
+        while len(self.input_q) > 0 and \
+                self.system.bb.available >= self.input_q[0].demand.bb_in:
+            job = self.input_q.pop(0)
+            self.system.bb.available -= job.demand.bb_in
+            jobs.append(job)
+        return jobs
+
+    def scheduleRun(self):
+        "return jobs s.t. max|jobs| with cpu and bb constraint"
+        jobs = []
+        self.run_q.sort(key=lambda job: job.demand.num_core)
+        while len(self.run_q) > 0 and \
+                self.system.cpu.available >= self.run_q[0].demand.num_core:
+            job = self.run_q.pop(0)
+            self.system.cpu.available -= job.demand.num_core
+            jobs.append(job)
+        return jobs
+
+    def scheduleStageOut(self):
+        "return jobs s.t. max|jobs| with bb constraint"
+        jobs = []
+        self.output_q.sort(key=lambda job: job.demand.bb)
+        while len(self.output_q) > 0 and \
+                self.system.bb.available >= self.output_q[0].demand.bb:
+            job = self.output_q.pop(0)
+            self.system.bb.available -= job.demand.bb
+            jobs.append(job)
+        return jobs
+
+
+class BBSchedulerDynamicProgramming(BBSchedulerViaBurstBuffer):
+    def __init__(self, system, solver):
+        super(BBSchedulerDynamicProgramming, self).__init__(system)
+        self.solver = solver
+
+    def scheduleStageIn(self):
+        pass
+
+    def scheduleRun(self):
+        pass
+
+    def scheduleStageOut(self):
+        pass

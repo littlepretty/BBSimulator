@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from job import BBJobStatus
 from enum import Enum
 import logging
 
@@ -35,11 +36,83 @@ class BBEvent(object):
             (self.eventType(), self.timestamp, str(self.job))
 
 
+class BBEventGenerator(object):
+    """generate events with CPU and IO system resource"""
+    def __init__(self, system):
+        super(BBEventGenerator, self).__init__()
+        self.system = system
+
+    def generateSubmittedEvents(self, job):
+        evt = BBEvent(job, job.ts.submit, BBEventType.Submitted)
+        return evt
+
+    def generateFinishRun(self, job):
+        job.ts.finish_run = job.ts.start_run + job.runtime
+        evt = BBEvent(job, job.ts.finish_run, BBEventType.FinishRun)
+        return evt
+
+    def generateFinishInput(self, job):
+        input_dur = job.demand.data_in / self.system.io.to_cpu
+        job.ts.finish_in = job.ts.start_in + input_dur
+        evt = BBEvent(job, job.ts.finish_in, BBEventType.FinishIn)
+        return evt
+
+    def generateFinishOutput(self, job):
+        output_dur = job.demand.data_out / self.system.cpu.to_io
+        job.ts.finish_out = job.ts.start_out + output_dur
+        evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
+        return evt
+
+    def generateEvents(self, jobs):
+        """generate new events based on schedule results"""
+        events = []
+        for job in jobs:
+            if job.status == BBJobStatus.WaitInput:
+                evt = self.generateSubmittedEvents(job)
+                events.append(evt)
+            elif job.status == BBJobStatus.Inputing:
+                evt = self.generateFinishInput(job)
+                events.append(evt)
+            elif job.status == BBJobStatus.Running:
+                evt = self.generateFinishRun(job)
+                events.append(evt)
+            elif job.status == BBJobStatus.Outputing:
+                evt = self.generateFinishOutput(job)
+                events.append(evt)
+            else:
+                logging.warn('\t Unable to generate events for %s' % str(job))
+
+        for evt in events:
+            logging.debug('\t Generate %s' % str(evt))
+        return events
+
+
+class BBEventGeneratorBurstBuffer(BBEventGenerator):
+    """generate events with CPU, Burst Buffer and IO resource"""
+    def __init__(self, system):
+        """system should be object of BBSystemBurstBuffer"""
+        super(BBEventGeneratorBurstBuffer, self).__init__(system)
+
+    def generateFinishInput(self, job):
+        input_dur = job.demand.data_in / self.system.io.to_bb
+        input_dur += job.demand.data_in / self.system.bb.to_cpu
+        job.ts.finish_in = job.ts.start_in + input_dur
+        evt = BBEvent(job, job.ts.finish_in, BBEventType.FinishIn)
+        return evt
+
+    def generateFinishOutput(self, job):
+        output_dur = job.demand.data_out / self.system.bb.to_io
+        job.ts.finish_out = job.ts.start_out + output_dur
+        evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
+        return evt
+
+
 class BBSimulator(object):
     """Event driven simulator"""
     def __init__(self):
         super(BBSimulator, self).__init__()
         self.scheduler = None
+        self.generator = None
         self.event_q = []
         self.virtual_time = float(0)
 
@@ -47,9 +120,12 @@ class BBSimulator(object):
         """change scheduler"""
         self.scheduler = sched
 
+    def setGenerator(self, gen):
+        self.generator = gen
+
     def simulate(self, jobs):
         """main simulation"""
-        events = self.scheduler.generateEvents(jobs)
+        events = self.generator.generateEvents(jobs)
         for evt in events:
             self.event_q.append(evt)
         self.simulateCore()
@@ -90,7 +166,7 @@ class BBSimulator(object):
                 logging.warn('\t Unable to handle event %s' % str(evt))
         jobs = self.scheduler.schedule(now)
         if jobs:
-            new_events = self.scheduler.generateEvents(jobs)
+            new_events = self.generator.generateEvents(jobs)
             for evt in new_events:
                 self.event_q.append(evt)
 

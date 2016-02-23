@@ -1,40 +1,70 @@
 #!/usr/bin/env python
 
 from simulator import BBSimulator
-from scheduler import BBScheduler, BBCpu, BBBurstBuffer, BBIo
+from simulator import BBEventGenerator, BBEventGeneratorBurstBuffer
+from scheduler import BBSchedulerDirectIO, BBSchedulerViaBurstBuffer
+from scheduler import BBSystem, BBSystemBurstBuffer
+from scheduler import BBCpu, BBBurstBuffer, BBIo
 from job import BBJob, BBJobDemand
 import logging
 
 
-def testSimulator():
+def testSimulateSchedulerDirectIO():
+    system = BBSystem(cpu, io)
+
+    generator = BBEventGenerator(system)
+    scheduler = BBSchedulerDirectIO(system)
+
     simulator = BBSimulator()
-
-    cpu = BBCpu(100, 10, 1)
-    bb = BBBurstBuffer(2000, 10, 1)
-    io = BBIo(1, 1)
-
-    scheduler = BBScheduler(cpu, bb, io)
     simulator.setScheduler(scheduler)
-
-    # num_core, bb_in, bb, data_out
-    demand1 = BBJobDemand(10, 20, 10, 50)
-    demand2 = BBJobDemand(60, 40, 80, 20)
-    demand3 = BBJobDemand(20, 80, 80, 10)
-    demand4 = BBJobDemand(30, 10, 600, 80)
-    demand5 = BBJobDemand(40, 80, 20, 40)
+    simulator.setGenerator(generator)
 
     # job_id, sumbit, demand, runtime
-    job1 = BBJob(1, 0, demand1, 500)
+    job1 = BBJob(1, 20, demand1, 500)
     job2 = BBJob(2, 20, demand2, 100)
     job3 = BBJob(3, 20, demand3, 600)
-    job4 = BBJob(4, 40, demand4, 400)
-    job5 = BBJob(5, 80, demand5, 800)
+    job4 = BBJob(4, 20, demand4, 400)
+    job5 = BBJob(5, 20, demand5, 800)
 
     jobs = [job1, job2, job3, job4, job5]
+
     simulator.simulate(jobs)
 
+
+def testSimulateSchedulerBurstBuffer():
+    bb_system = BBSystemBurstBuffer(cpu, bb, io)
+
+    bb_generator = BBEventGeneratorBurstBuffer(bb_system)
+    bb_scheduler = BBSchedulerViaBurstBuffer(bb_system)
+
+    bb_simulator = BBSimulator()
+    bb_simulator.setScheduler(bb_scheduler)
+    bb_simulator.setGenerator(bb_generator)
+
+    # job_id, sumbit, demand, runtime
+    job1 = BBJob(1, 20, demand1, 500)
+    job2 = BBJob(2, 20, demand2, 100)
+    job3 = BBJob(3, 20, demand3, 600)
+    job4 = BBJob(4, 20, demand4, 400)
+    job5 = BBJob(5, 20, demand5, 800)
+
+    jobs = [job1, job2, job3, job4, job5]
+
+    bb_simulator.simulate(jobs)
 
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
-    testSimulator()
+    cpu = BBCpu(100, 100, 1)
+    bb = BBBurstBuffer(1000, 100, 10)
+    io = BBIo(1, 10)
+
+    # num_core, bb_in, bb, data_out
+    demand1 = BBJobDemand(30, 800, 400, 500)
+    demand2 = BBJobDemand(60, 800, 500, 200)
+    demand3 = BBJobDemand(40, 180, 600, 100)
+    demand4 = BBJobDemand(30, 100, 800, 800)
+    demand5 = BBJobDemand(40, 180, 900, 400)
+
+    testSimulateSchedulerDirectIO()
+    testSimulateSchedulerBurstBuffer()

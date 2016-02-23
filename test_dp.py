@@ -13,13 +13,13 @@ def testDynamicProgramming():
     # num_core, bb_in, bb, data_out
     demand1 = BBJobDemand(10, 120, 10, 50)
     demand2 = BBJobDemand(60, 800, 80, 20)
-    demand3 = BBJobDemand(20, 640, 80, 10)
+    demand3 = BBJobDemand(20, 640, 800, 10)
     demand4 = BBJobDemand(30, 240, 600, 80)
-    demand5 = BBJobDemand(40, 800, 20, 40)
-    demand6 = BBJobDemand(20, 120, 40, 30)
-    demand7 = BBJobDemand(20, 100, 40, 30)
-    demand8 = BBJobDemand(20, 140, 40, 30)
-    demand9 = BBJobDemand(20, 80, 40, 30)
+    demand5 = BBJobDemand(40, 800, 250, 40)
+    demand6 = BBJobDemand(20, 120, 200, 30)
+    demand7 = BBJobDemand(20, 100, 100, 30)
+    demand8 = BBJobDemand(20, 140, 80, 30)
+    demand9 = BBJobDemand(20, 80, 60, 30)
 
     # job_id, sumbit, demand, runtime
     job1 = BBJob(1, 20, demand1, 500)
@@ -34,9 +34,13 @@ def testDynamicProgramming():
 
     jobs = [job1, job2, job3, job4, job5, job6, job7, job8, job9]
     solver = DPSolver(jobs, cpu.capacity, bb.capacity)
-    solver.maxStageInBurstBuffer()
-    solver.maxStageInParallelJobs()
+    solver.maxStageInBurstBuffer(bb.available, jobs)
 
+    jobs = [job5, job6, job7, job8, job9]
+    solver.maxStageInParallelJobs(bb.available, jobs)
+
+    jobs = [job1, job2, job3, job4, job5, job6, job7, job8, job9]
+    solver.maxRunningCpuBb(cpu.available, bb.available, jobs)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
