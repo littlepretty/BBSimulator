@@ -53,8 +53,8 @@ def testSimulateSchedulerBurstBuffer():
     bb_simulator.simulate(jobs)
 
 if __name__ == '__main__':
-    # logging.basicConfig(level=logging.DEBUG)
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
+    # logging.basicConfig(level=logging.INFO)
     cpu = BBCpu(100, 100, 1)
     bb = BBBurstBuffer(1000, 100, 10)
     io = BBIo(1, 10)
