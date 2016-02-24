@@ -173,6 +173,7 @@
 % *** MATH PACKAGES ***
 %
 \usepackage{amsmath}
+\usepackage{cuted}
 % A popular package from the American Mathematical Society that provides
 % many useful and powerful commands for dealing with mathematics.
 %
@@ -557,53 +558,48 @@ Memorization is also applied to accelerate the solving process.
 In fact we are not interested in the optimal solution at all but in one combination of jobs
 that yields the optimal solution, which can also be easily tracked back down by keeping memorizations.
 
+\begin{strip}
+        \begin{align}
+                dp(i, w) = & 
+                \left\{
+                        \begin{array}{l}
+                                0, \textit{ if $i=0$ } \\ [1em]
+                                dp(i-1, w), \textit{ if $bb\_sin_i > w$} \\ [1em]
+                                \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + bb\_sin_i \}, \textit{ if $bb\_sin_i \leq w$}
+                        \end{array} 
+                \right.
+                \label{Equ:MaxTransferDataRecursion} 
+                \\
+                dp(i, w) = &
+                \left\{
+                        \begin{array}{l}
+                                0, \textit{ if $i=0$ } \\ [1em]
+                                dp(i-1, w), \textit{ if $bb\_sin_i > w$} \\ [1em]
+                                \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + 1 \}, \textit{ if $bb\_sin_i \leq w$}
+                        \end{array} 
+                \right.
+                \label{Equ:MaxTaskNumberRecursion}
+                \\
+                dp(i, c, w) = &
+                \left\{
+                        \begin{array}{l}
+                                0, \textit{ if $i=0$ } \\ [1em]
+                                dp(i-1, c, w), \textit{ if $c_i > c$ or $bb\_sin_i > w$} \\ [1em]
+                                \max \{ dp(i-1, c, w), dp(i-1, c - c_i, w-bb\_sin_i) + 1 \}, \textit{ if $c_i \leq c$ and $bb\_sin_i \leq w$}
+                        \end{array} 
+                \right.
+                \label{Equ:MaxProductRecursion}
+        \end{align}
+\end{strip}
+
 Since problems \ref{Equ:MaxTransferData} -- \ref{Equ:MaxProduct} are very similar, 
 their solution is also highly related.
-First, for problem \ref{Equ:MaxTransferData}, the recursive relationship is given by
-
-\begin{align}
-        dp(i, w) = 
-        & \left\{
-                \begin{array}{l}
-                        0, \textit{ if $i=0$ } \\ [1em]
-                        dp(i-1, w), \textit{ if $bb\_sin_i > w$} \\ [1em]
-                        \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + bb\_sin_i \}, \textif{ if $bb\_sin_i <= w$}
-                \end{array} 
-        \right.
-        \label{Equ:MaxTransferDataRecursion}
-\end{align}	
-
+First, for problem \ref{Equ:MaxTransferData}, the recursive relationship is given by \ref{Equ:MaxTransferDataRecursion}.
 In \ref{Equ:MaxTransferDataRecursion}, the memo we keeps during solving is the optimal solution for 
 $jobs=(job_1, job_2, \ldots, job_i)$ with $w$ GB of burst buffer.
 It turns out that the recursion for problem \ref{Equ:MaxTaskNumber} is extremely similar to \ref{Equ:MaxTransferDataRecursion}
-
-\begin{align}
-        dp(i, w) = 
-        & \left\{
-                \begin{array}{l}
-                        0, \textit{ if $i=0$ } \\ [1em]
-                        dp(i-1, w), \textit{ if $bb\_sin_i > w$} \\ [1em]
-                        \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + 1 \}, \textif{ if $bb\_sin_i <= w$}
-                \end{array} 
-        \right.
-        \label{Equ:MaxTaskNumberRecursion}
-\end{align}
-
 The memo in \ref{Equ:MaxTaskNumberRecursion} is the same as that in \ref{Equ:MaxTransferDataRecursion}.
 The recursion for \ref{Equ:MaxProduct} is a little complicated but still straightforward
-
-\begin{align}
-        dp(i, c, w) = 
-        & \left\{
-                \begin{array}{l}
-                        0, \textit{ if $i=0$ } \\ [1em]
-                        dp(i-1, c, w), \textit{ if $c_i > c$ or $bb\_sin_i > w$} \\ [1em]
-                        \max \{ dp(i-1, c, w), dp(i-1, c - c_i, w-bb\_sin_i) + 1 \}, \textif{ if $c_i <= c$ and $bb\_sin_i <= w$}
-                \end{array} 
-        \right.
-        \label{Equ:MaxProductRecursion}
-\end{align}
-
 Here we should keep the memo of the optimal solution for $jobs=(job_1, job_2, \ldots, job_i)$
 with $c$ computing nodes and $w$ GB of burst buffer.
 
@@ -612,7 +608,6 @@ Take the problem \ref{Equ:MaxProduct} problem for example.
 We start from $dp(n, CN, BB)$; if $c_n <= CN$ and $bb\_sin_n <= BB$, $job_n$ should be scheduled if
 $dp(i-1, c, w) \leq dp(i-1, c - c_i, w-bb\_sin_i) + c_i bb\_sin_i$ and recurse with $dp(n-1, CN-c_i, BB-bb\_sin_i$;
 otherwise, $job_n$ should be skipped and we recurse the process on $dp(n-1, CN, BB)$.
-
 The time complexity of solving \ref{Equ:MaxTransferDataRecursion} and \ref{Equ:MaxTaskNumberRecursion} is $O(n*BB)$.
 The time complexity of solving \ref{Equ:MaxProductRecursion} is $O(n*CN*BB)$.
 
