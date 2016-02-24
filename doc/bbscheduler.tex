@@ -183,7 +183,7 @@
 % does. amsmath.sty is already installed on most LaTeX systems. The latest
 % version and documentation can be obtained at:
 % http://www.ctan.org/pkg/amsmath
-
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 
 
 
@@ -333,7 +333,7 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{A Parallelism Oriented Three Phase Based Burst Buffering aware Scheduler}
+\title{A Parallelism Oriented Three Phase Based Burst Buffering Aware Scheduler}
 
 
 % author names and affiliations
@@ -397,14 +397,19 @@ Fax: (888) 555--1212}}
 \begin{abstract}
 In an computing world full of Big Data, moderate I/O performance will drastically slow down the overall execution time of applications.
 Burst buffer nodes comes to rescue by providing both higher bandwidth and IOPS.
-In this paper, we model the execution of applications on supercomputing system shipped with burst buffer nodes.
+In this paper, we model the execution of applications on supercomputing system equipped with burst buffer nodes.
 Computing nodes are able to be freed earlier due to these efficient and reliable IO broker, 
 possibly improving the utilization of task execution pipeline.
 We thus characterize generic applications by 3 phases: \textit{data stage in} phase, \textit{running} phase and \textit{data stage out} phase.
-Resources in these phases are intuitively scheduled separately with possible different goals.
-In both data stage I/O phase, it is possible to maximize data transfer throughput or task parallelism by allocating burst buffer.
-In the running phase, ...
-We simulate the scenarios both with and without burst buffer on a discrete event simulator to demonstrate its benefit to system performance.
+Resources in these phases are intuitively scheduled separately targeting on possible different goals.
+In both data stage input and output phase, it is possible to maximize data transfer throughput or task parallelism by allocating burst buffer.
+In the running phase, we consider maximize the value of scheduling tasks with both computing node resources and burst buffer node demand.
+Further investigating shows that all aforementioned optimization problems are equivalent to 0-1 knapsack problem,
+requiring exponential time to solve.
+We use dynamic programming and memorization technique to give precise solutions.
+We simulate scheduling system in the scenarios both with and without burst buffer on a discrete event simulator to demonstrate that
+1) burst buffer node can accelerate the execution pipeline of all task, thus improving the utilization of the computing nodes as well as task response time
+2) our scheduling algorithm can further benefit burst buffer equipped system.
 \end{abstract}
 
 % no keywords
@@ -437,7 +442,7 @@ I wish you the best of success.
  
 \hfill August 26, 2015
 
-\section{Model}
+\section{Model for Computing System}
 \subsection{System Resources}
 The system contains resources like compute node, main memory, burst buffer and IO node.
 In most system architecture, compute node are coupled with main memmory.
@@ -466,12 +471,12 @@ Staging output out to IO node is the bussiness just between burst buffer and IO 
 
 \subsection{Resource Demand}
 User typically provides its resource demand for her job.
-Therefore, each job is associated with a demand vector in the form of $(c, bb_{sin}, bb)$,
+Therefore, each job is associated with a demand vector in the form of $(c, bb\_sin, bb)$,
 where $c$ is the number of needed compute node in running phase,
-$bb_{sin}$ is the volumn of burst buffer user predicted for file stage in,
+$bb\_sin$ is the volumn of burst buffer user predicted for file stage in,
 $bb$ is the volumn of burst buffer user preferred.
-A benign user should set $bb = \max\{bb_{running}, bb_{stage-out}\}$.
-However, we do not make any assumption about $bb_{running}$ and $bb_{stage-out}$ because it is nontrivial to predict them,
+A benign user should set $bb = \max\{bb\_running, bb\_sout\}$.
+However, we do not make any assumption about $bb\_running$ and $bb\_sout$ because it is nontrivial to predict them,
 both for system scheduler and application owner.
 
 \subsection{3-Phase Scheduler}
@@ -485,42 +490,132 @@ This fact motivates seperated scheduling idiom.
 
 \subsubsection*{IO-BB Scheduling}
 Scheduling are made based on the value of $bb_{sin}$ of jobs in $Q_I$.
-If we care about data transfer throughput, we should do the following optimization:
-\begin{align}
-& \max \sum_{i\in S} bb[i]_{sin} \\
-& S \cup NS = J \\
-& \sum_{i\in S} bb[i]_{sin} = BB
-\end{align}
+If we care about data transfer throughput, 
+we should transfer as much data as possible by doing the following optimization:
+\begin{align*}
+        & \max \sum_{i\in S} bb\_sin_i \textit{   s.t.}\\
+        & \left\{
+                \begin{array}{l}
+                        S \cup NS = J \\ [1em] \numberthis \label{Equ:MaxTransferData} 
+                        \sum_{i\in S} bb\_sin_i \leq BB
+                \end{array} 
+        \right.
+\end{align*}	
 
 If we care about task parallelism, following optimization could help:
-\begin{align}
-& \max |S| \\
-& S \cup NS = J \\
-& \sum_{i\in S} bb[i]_{sin} = BB
-\end{align}
+\begin{align*}
+        & \max |S| \textit{   s.t.} \\
+        & \left\{
+                \begin{array}{l}
+                        S \cup NS = J \\ [1em] \numberthis \label{Equ:MaxTaskNumber} 
+                        \sum_{i\in S} bb\_sin_i \leq BB
+                \end{array} 
+        \right.
+\end{align*}
+The number of tasks doing data loading will be maximized.
+
 
 \subsubsection*{CN-BB Scheduling}
 Scheduling are made based on the value of $c$ and $bb$ of jobs in $Q_R$.
-To maximize the resource utilization:
-\begin{align}
-& \max \sum_{i \in S}c[i] * bb[i] \\
-& S \cup NS = J \\
-& \sum_{i \in S}c[i] <= CN \\
-& \sum_{i \in S} bb[i] <= BB
-\end{align}
+To maximize the resource utilization, we define the value of $job_i$ as
+\begin{equation}
+        v_j = \frac{c_i / CN}{rt_i} \times \frac{bb_i / BB}{rt_i}
+        \label{Equ:DefValue}
+\end{equation}
+where $rt_i$ is the running time of $job_i$, the time it takes up the computing nodes.
+By definition \ref{Equ:DefValue}, we prefer these tasks that claims to take up node resources with short duration.
+Unfortunately, it is difficult to predict $rt_i$ before actually running the job.
+For now we can just assume $rt_i$ is constant for all jobs.
+In the future, we could adopt machine learning or data mining ideas to predict the running time of a job with demand vector.
+
+Notice that the value of a task is proportional to $c_i*bb_i$.
+The optimizing formula can thus be
+\begin{align*}
+        & \max \sum_{i \in S}c_i * bb_i \textit{   s.t.}\\
+        & \left\{
+                \begin{array}{l}
+                        S \cup NS = J \\ [1em]
+                        \sum_{i \in S}c_i \leq CN \\ [1em] \numberthis \label{Equ:MaxProduct} 
+                        \sum_{i\in S} bb_i \leq BB
+                \end{array} 
+        \right.
+\end{align*}	
+
 
 \subsubsection*{BB-IO Scheduling}
 Scheduling are made based on the value of $bb$ of jobs in $Q_O$.
-Optimization for different purpose are the same as in IO-BB scheduling.
+Optimization formula for different purpose are almost the same to these in IO-BB scheduling.
 
 
+\section{Solving the Optimization Problems}
+It is trivial to show that optimization problem \ref{Equ:MaxTransferData} and \ref{Equ:MaxTaskNumber}
+are equivalent to 0-1 knapsack problem.
+Problem \ref{Equ:MaxProduct} can be informally treat as two dimension 0-1 knapsack problem.
+In fact, we expect all of them are NP-hard problems.
+We can solve them with dynamic programming in pseudo polynomial time.
+Memorization is also applied to accelerate the solving process.
+In fact we are not interested in the optimal solution at all but in one combination of jobs
+that yields the optimal solution, which can also be easily tracked back down by keeping memorizations.
 
-\subsection{Subsection Heading Here}
-Subsection text here.
+Since problems \ref{Equ:MaxTransferData} -- \ref{Equ:MaxProduct} are very similar, 
+their solution is also highly related.
+First, for problem \ref{Equ:MaxTransferData}, the recursive relationship is given by
 
+\begin{align}
+        dp(i, w) = 
+        & \left\{
+                \begin{array}{l}
+                        0, \textit{ if $i=0$ } \\ [1em]
+                        dp(i-1, w), \textit{ if $bb\_sin_i > w$} \\ [1em]
+                        \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + bb\_sin_i \}, \textif{ if $bb\_sin_i <= w$}
+                \end{array} 
+        \right.
+        \label{Equ:MaxTransferDataRecursion}
+\end{align}	
 
-\subsubsection{Subsubsection Heading Here}
-Subsubsection text here.
+In \ref{Equ:MaxTransferDataRecursion}, the memo we keeps during solving is the optimal solution for 
+$jobs=(job_1, job_2, \ldots, job_i)$ with $w$ GB of burst buffer.
+It turns out that the recursion for problem \ref{Equ:MaxTaskNumber} is extremely similar to \ref{Equ:MaxTransferDataRecursion}
+
+\begin{align}
+        dp(i, w) = 
+        & \left\{
+                \begin{array}{l}
+                        0, \textit{ if $i=0$ } \\ [1em]
+                        dp(i-1, w), \textit{ if $bb\_sin_i > w$} \\ [1em]
+                        \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + 1 \}, \textif{ if $bb\_sin_i <= w$}
+                \end{array} 
+        \right.
+        \label{Equ:MaxTaskNumberRecursion}
+\end{align}
+
+The memo in \ref{Equ:MaxTaskNumberRecursion} is the same as that in \ref{Equ:MaxTransferDataRecursion}.
+The recursion for \ref{Equ:MaxProduct} is a little complicated but still straightforward
+
+\begin{align}
+        dp(i, c, w) = 
+        & \left\{
+                \begin{array}{l}
+                        0, \textit{ if $i=0$ } \\ [1em]
+                        dp(i-1, c, w), \textit{ if $c_i > c$ or $bb\_sin_i > w$} \\ [1em]
+                        \max \{ dp(i-1, c, w), dp(i-1, c - c_i, w-bb\_sin_i) + 1 \}, \textif{ if $c_i <= c$ and $bb\_sin_i <= w$}
+                \end{array} 
+        \right.
+        \label{Equ:MaxProductRecursion}
+\end{align}
+
+Here we should keep the memo of the optimal solution for $jobs=(job_1, job_2, \ldots, job_i)$
+with $c$ computing nodes and $w$ GB of burst buffer.
+
+Scheduler can obtain an optimal combination of jobs by examining the memo.
+Take the problem \ref{Equ:MaxProduct} problem for example.
+We start from $dp(n, CN, BB)$; if $c_n <= CN$ and $bb\_sin_n <= BB$, $job_n$ should be scheduled if
+$dp(i-1, c, w) \leq dp(i-1, c - c_i, w-bb\_sin_i) + c_i bb\_sin_i$ and recurse with $dp(n-1, CN-c_i, BB-bb\_sin_i$;
+otherwise, $job_n$ should be skipped and we recurse the process on $dp(n-1, CN, BB)$.
+
+The time complexity of solving \ref{Equ:MaxTransferDataRecursion} and \ref{Equ:MaxTaskNumberRecursion} is $O(n*BB)$.
+The time complexity of solving \ref{Equ:MaxProductRecursion} is $O(n*CN*BB)$.
+
 
 
 % An example of a floating figure using the graphicx package.
