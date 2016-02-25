@@ -5,7 +5,7 @@ import logging
 
 class DPSolver(object):
     """dynamic programming solver for scheduling"""
-    def __init__(self, jobs, available_cpu, available_bb):
+    def __init__(self):
         super(DPSolver, self).__init__()
         self.jobs = None
 
@@ -58,6 +58,9 @@ class DPSolver(object):
         logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
+    def maxStageOutBurstBuffer(self, BB, all_jobs):
+        return self.maxStageInBurstBuffer(BB, all_jobs)
+
     def maxStageInParallelJobs(self, BB, all_jobs):
         """maximize utilization of burst buffer"""
         self.jobs = all_jobs
@@ -107,6 +110,9 @@ class DPSolver(object):
         logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
+    def maxStageOutParallelJobs(self, BB, all_jobs):
+        return self.maxStageInParallelJobs(BB, all_jobs)
+
     def maxRunningCpuBb(self, CPU, BB, all_jobs):
         """maximize utilization of (cpu, burst buffer) pair"""
         self.jobs = all_jobs
@@ -146,7 +152,7 @@ class DPSolver(object):
 
         def trackBackJobs(i, c, w):
             """return a optimal solution for 0-1 knapsack problem"""
-            if i < 0:
+            if i <= 0:
                 return
             if cpu_demand[i-1] <= c and bb_demand[i-1] <= w:
                 if memo[i-1][c - cpu_demand[i-1]][w - bb_demand[i-1]] \

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from enum import Enum
-import logging
+# import logging
 
 
 class BBJobTimeStamp(object):
@@ -55,6 +55,9 @@ class BBJob(object):
         self.runtime = float(rt)
         self.status = BBJobStatus.WaitInput
 
+    def __eq__(self, other):
+        return self.job_id == other.job_id
+
     def jobStatus(self):
         if self.status == BBJobStatus.WaitInput:
             return 'Wait Input'
@@ -73,7 +76,7 @@ class BBJob(object):
 
     def __str__(self):
         return 'job_%d, %s [%s]' % (self.job_id,
-                                     self.demand, self.jobStatus())
+                                    self.demand, self.jobStatus())
 
     def dumpTimeStatistic(self):
         if self.status == BBJobStatus.Complete:

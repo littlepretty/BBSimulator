@@ -2,7 +2,6 @@
 
 import logging
 from job import BBJobStatus
-from simulator import BBEvent, BBEventType
 from tabulate import tabulate
 
 
@@ -106,15 +105,18 @@ class BBSchedulerBase(object):
         self.input_q.append(job)
 
     def insertToRunQ(self, job, now):
+        """Override me when consider burst buffer"""
         job.status = BBJobStatus.WaitRun
         self.run_q.append(job)
 
     def insertToOutputQ(self, job, now):
+        """Override me when consider burst buffer"""
         job.status = BBJobStatus.WaitOutput
         self.system.cpu.available += job.demand.num_core
         self.output_q.append(job)
 
     def insertToCompleteQ(self, job, now):
+        """Override me when consider burst buffer"""
         job.status = BBJobStatus.Complete
         self.complete_q.append(job)
 
@@ -134,7 +136,10 @@ class BBSchedulerBase(object):
                                        tablefmt='fancy_grid'))
 
     def scheduleStageIn(self):
-        """return all jobs in input queue"""
+        """
+        return all jobs in input queue
+        override me
+        """
         jobs = []
         while len(self.input_q) > 0:
             job = self.input_q.pop(0)
@@ -142,7 +147,10 @@ class BBSchedulerBase(object):
         return jobs
 
     def scheduleRun(self):
-        """FIFO as long as there are cpu available"""
+        """
+        FIFO as long as there are cpu available
+        override me
+        """
         jobs = []
         while len(self.run_q) > 0 and \
                 self.system.cpu.available > self.run_q[0].demand.num_core:
@@ -152,7 +160,10 @@ class BBSchedulerBase(object):
         return jobs
 
     def scheduleStageOut(self):
-        """return all jobs in output queue"""
+        """
+        return all jobs in output queue
+        override me
+        """
         jobs = []
         while len(self.output_q) > 0:
             job = self.output_q.pop(0)
@@ -201,6 +212,7 @@ class BBSchedulerBase(object):
 
 
 class BBSchedulerDirectIO(BBSchedulerBase):
+    """scheduler don't know burst buffer"""
     def __init__(self, system):
         super(BBSchedulerDirectIO, self).__init__(system)
 
@@ -219,6 +231,7 @@ class BBSchedulerDirectIO(BBSchedulerBase):
 
 
 class BBSchedulerViaBurstBuffer(BBSchedulerBase):
+    """scheduler knows burst buffer"""
     def __init__(self, system):
         super(BBSchedulerViaBurstBuffer, self).__init__(system)
 
@@ -227,13 +240,19 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
         self.system.bb.available += job.demand.bb_in
         self.run_q.append(job)
 
+    def insertToOutputQ(self, job, now):
+        job.status = BBJobStatus.WaitOutput
+        self.system.cpu.available += job.demand.num_core
+        self.system.bb.available += job.demand.bb
+        self.output_q.append(job)
+
     def insertToCompleteQ(self, job, now):
         job.status = BBJobStatus.Complete
         self.system.bb.available += job.demand.bb
         self.complete_q.append(job)
 
     def scheduleStageIn(self):
-        "return jobs s.t. max|jobs| with bb constraint"
+        "greedily choose jobs s.t. max|jobs| with bb constraint"
         jobs = []
         # sort descendingly, max data throughput
         # sort ascendingly, max parallelism
@@ -246,18 +265,20 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
         return jobs
 
     def scheduleRun(self):
-        "return jobs s.t. max|jobs| with cpu and bb constraint"
+        "greedily choose jobs s.t. max|jobs| with cpu and bb constraint"
         jobs = []
         self.run_q.sort(key=lambda job: job.demand.num_core)
         while len(self.run_q) > 0 and \
-                self.system.cpu.available >= self.run_q[0].demand.num_core:
+                self.system.cpu.available >= self.run_q[0].demand.num_core and\
+                self.system.bb.available >= self.run_q[0].demand.bb:
             job = self.run_q.pop(0)
             self.system.cpu.available -= job.demand.num_core
+            self.system.bb.available -= job.demand.bb
             jobs.append(job)
         return jobs
 
     def scheduleStageOut(self):
-        "return jobs s.t. max|jobs| with bb constraint"
+        "greedily choose jobs s.t. max|jobs| with bb constraint"
         jobs = []
         self.output_q.sort(key=lambda job: job.demand.bb)
         while len(self.output_q) > 0 and \
@@ -268,16 +289,87 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
         return jobs
 
 
-class BBSchedulerDynamicProgramming(BBSchedulerViaBurstBuffer):
+class BBSchedulerMaxBurstBuffer(BBSchedulerViaBurstBuffer):
+    """Maximize burst buffer's total usage with DP"""
     def __init__(self, system, solver):
-        super(BBSchedulerDynamicProgramming, self).__init__(system)
+        super(BBSchedulerMaxBurstBuffer, self).__init__(system)
         self.solver = solver
 
     def scheduleStageIn(self):
-        pass
+        jobs = []
+        if len(self.input_q) > 0:
+            logging.debug('\t Solving on input queue, %.2f' %
+                          self.system.bb.available)
+            jobs = self.solver.maxStageInBurstBuffer(self.system.bb.available,
+                                                     self.input_q)
+            for job in jobs:
+                self.system.bb.available -= job.demand.bb_in
+                self.input_q.remove(job)
+        return jobs
 
     def scheduleRun(self):
-        pass
+        jobs = []
+        if len(self.run_q) > 0:
+            logging.debug('\t Solving on running queue')
+            jobs = self.solver.maxRunningCpuBb(self.system.cpu.available,
+                                               self.system.bb.available,
+                                               self.run_q)
+            for job in jobs:
+                self.system.bb.available -= job.demand.bb
+                self.system.cpu.available -= job.demand.num_core
+                self.run_q.remove(job)
+        return jobs
 
     def scheduleStageOut(self):
-        pass
+        jobs = []
+        if len(self.output_q) > 0:
+            logging.debug('\t Solving on output queue')
+            jobs = self.solver.maxStageOutBurstBuffer(self.system.bb.available,
+                                                      self.output_q)
+            for job in jobs:
+                self.system.bb.available -= job.demand.bb
+                self.output_q.remove(job)
+        return jobs
+
+
+class BBSchedulerMaxParallel(BBSchedulerViaBurstBuffer):
+    """Maximize number of tasks possible to run with DP"""
+    def __init__(self, system, solver):
+        super(BBSchedulerMaxParallel, self).__init__(system)
+        self.solver = solver
+
+    def scheduleStageIn(self):
+        jobs = []
+        if len(self.input_q) > 0:
+            logging.debug('\t Solving on input queue, %.2f' %
+                          self.system.bb.available)
+            jobs = self.solver.maxStageInParallelJobs(self.system.bb.available,
+                                                      self.input_q)
+            for job in jobs:
+                self.system.bb.available -= job.demand.bb_in
+                self.input_q.remove(job)
+        return jobs
+
+    def scheduleRun(self):
+        jobs = []
+        if len(self.run_q) > 0:
+            logging.debug('\t Solving on running queue')
+            jobs = self.solver.maxRunningCpuBb(self.system.cpu.available,
+                                               self.system.bb.available,
+                                               self.run_q)
+            for job in jobs:
+                self.system.bb.available -= job.demand.bb
+                self.system.cpu.available -= job.demand.num_core
+                self.run_q.remove(job)
+        return jobs
+
+    def scheduleStageOut(self):
+        jobs = []
+        if len(self.output_q) > 0:
+            logging.debug('\t Solving on output queue')
+            jobs = self.solver.maxStageOutParallelJobs(self.system.bb.available,
+                                                       self.output_q)
+            for job in jobs:
+                self.system.bb.available -= job.demand.bb
+                self.output_q.remove(job)
+        return jobs
