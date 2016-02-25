@@ -33,7 +33,7 @@ def testDynamicProgramming():
     job9 = BBJob(9, 20, demand9, 800)
 
     jobs = [job1, job2, job3, job4, job5, job6, job7, job8, job9]
-    solver = DPSolver(jobs, cpu.capacity, bb.capacity)
+    solver = DPSolver()
     solver.maxStageInBurstBuffer(bb.available, jobs)
 
     jobs = [job5, job6, job7, job8, job9]
