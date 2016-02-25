@@ -494,7 +494,7 @@ Scheduling are made based on the value of $bb_{sin}$ of jobs in $Q_I$.
 If we care about data transfer throughput, 
 we should transfer as much data as possible by doing the following optimization:
 \begin{align*}
-        & \max \sum_{i\in S} bb\_sin_i \textit{   s.t.}\\
+        & \max \sum_{i\in S} bb\_sin_i \textit{   s.t.}\\[1em]
         & \left\{
                 \begin{array}{l}
                         S \cup NS = J \\ [1em] \numberthis \label{Equ:MaxTransferData} 
@@ -505,7 +505,7 @@ we should transfer as much data as possible by doing the following optimization:
 
 If we care about task parallelism, following optimization could help:
 \begin{align*}
-        & \max |S| \textit{   s.t.} \\
+        & \max |S| \textit{   s.t.} \\[1em]
         & \left\{
                 \begin{array}{l}
                         S \cup NS = J \\ [1em] \numberthis \label{Equ:MaxTaskNumber} 
@@ -532,7 +532,7 @@ In the future, we could adopt machine learning or data mining ideas to predict t
 Notice that the value of a task is proportional to $c_i*bb_i$.
 The optimizing formula can thus be
 \begin{align*}
-        & \max \sum_{i \in S}c_i * bb_i \textit{   s.t.}\\
+        & \max \sum_{i \in S}c_i * bb_i \textit{   s.t.}\\[1em]
         & \left\{
                 \begin{array}{l}
                         S \cup NS = J \\ [1em]
@@ -563,29 +563,29 @@ that yields the optimal solution, which can also be easily tracked back down by 
                 dp(i, w) = & 
                 \left\{
                         \begin{array}{l}
-                                0, \textit{ if $i=0$ } \\ [1em]
-                                dp(i-1, w), \textit{ if $bb\_sin_i > w$} \\ [1em]
-                                \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + bb\_sin_i \}, \textit{ if $bb\_sin_i \leq w$}
+                                0, \text{ if $i=0$ } \\ [1em]
+                                dp(i-1, w), \text{ if $bb\_sin_i > w$} \\ [1em]
+                                \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + bb\_sin_i \}, \text{ if $bb\_sin_i \leq w$}
                         \end{array} 
                 \right.
                 \label{Equ:MaxTransferDataRecursion} 
-                \\
+                \\[1em]
                 dp(i, w) = &
                 \left\{
                         \begin{array}{l}
-                                0, \textit{ if $i=0$ } \\ [1em]
-                                dp(i-1, w), \textit{ if $bb\_sin_i > w$} \\ [1em]
-                                \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + 1 \}, \textit{ if $bb\_sin_i \leq w$}
+                                0, \text{ if $i=0$ } \\ [1em]
+                                dp(i-1, w), \text{ if $bb\_sin_i > w$} \\ [1em]
+                                \max \{ dp(i-1, w), dp(i-1, w-bb\_sin_i) + 1 \}, \text{ if $bb\_sin_i \leq w$}
                         \end{array} 
                 \right.
                 \label{Equ:MaxTaskNumberRecursion}
-                \\
+                \\[1em]
                 dp(i, c, w) = &
                 \left\{
                         \begin{array}{l}
-                                0, \textit{ if $i=0$ } \\ [1em]
-                                dp(i-1, c, w), \textit{ if $c_i > c$ or $bb\_sin_i > w$} \\ [1em]
-                                \max \{ dp(i-1, c, w), dp(i-1, c - c_i, w-bb\_sin_i) + 1 \}, \textit{ if $c_i \leq c$ and $bb\_sin_i \leq w$}
+                                0, \text{ if $i=0$ } \\ [1em]
+                                dp(i-1, c, w), \text{ if $c_i > c$ or $bb\_sin_i > w$} \\ [1em]
+                                \max \{ dp(i-1, c, w), dp(i-1, c - c_i, w-bb\_sin_i) + 1 \}, \text{ if $c_i \leq c$ and $bb\_sin_i \leq w$}
                         \end{array} 
                 \right.
                 \label{Equ:MaxProductRecursion}
@@ -605,11 +605,11 @@ with $c$ computing nodes and $w$ GB of burst buffer.
 
 Scheduler can obtain an optimal combination of jobs by examining the memo.
 Take the problem \ref{Equ:MaxProduct} problem for example.
-We start from $dp(n, CN, BB)$; if $c_n <= CN$ and $bb\_sin_n <= BB$, $job_n$ should be scheduled if
+We start from $dp(n, CN, BB)$; if $c_n \leq CN$ and $bb\_sin_n \leq BB$, $job_n$ should be scheduled if
 $dp(i-1, c, w) \leq dp(i-1, c - c_i, w-bb\_sin_i) + c_i bb\_sin_i$ and recurse with $dp(n-1, CN-c_i, BB-bb\_sin_i$;
 otherwise, $job_n$ should be skipped and we recurse the process on $dp(n-1, CN, BB)$.
-The time complexity of solving \ref{Equ:MaxTransferDataRecursion} and \ref{Equ:MaxTaskNumberRecursion} is $O(n*BB)$.
-The time complexity of solving \ref{Equ:MaxProductRecursion} is $O(n*CN*BB)$.
+The time complexity of solving \ref{Equ:MaxTransferDataRecursion} and \ref{Equ:MaxTaskNumberRecursion} is $O(n\times BB)$.
+The time complexity of solving \ref{Equ:MaxProductRecursion} is $O(n\times CN\times BB)$.
 
 
 
