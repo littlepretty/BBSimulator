@@ -9,10 +9,8 @@ class DPSolver(object):
         super(DPSolver, self).__init__()
         self.jobs = None
 
-    def maxStageInBurstBuffer(self, BB, all_jobs):
+    def maxBurstBuffer(self, BB, demand):
         """maximize utilization of burst buffer"""
-        self.jobs = all_jobs
-        demand = [job.demand.bb_in for job in self.jobs]
         N = len(demand)
         # memo[i][w] is the optimal solution for jobs[0...i-1]
         # with w GB of burst buffer
@@ -58,13 +56,17 @@ class DPSolver(object):
         logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
-    def maxStageOutBurstBuffer(self, BB, all_jobs):
-        return self.maxStageInBurstBuffer(BB, all_jobs)
-
-    def maxStageInParallelJobs(self, BB, all_jobs):
-        """maximize utilization of burst buffer"""
+    def maxStageInBurstBuffer(self, BB, all_jobs):
         self.jobs = all_jobs
-        demand = [job.demand.bb_in for job in self.jobs]
+        demand = [job.demand.data_in for job in self.jobs]
+        return self.maxBurstBuffer(BB, demand)
+
+    def maxStageOutBurstBuffer(self, BB, all_jobs):
+        self.jobs = all_jobs
+        demand = [job.demand.data_out for job in self.jobs]
+        return self.maxBurstBuffer(BB, demand)
+
+    def maxNumberTasks(self, BB, demand):
         N = len(demand)
         # memo[i][w] is the optimal solution for jobs[0...i-1]
         # with w GB of burst buffer
@@ -110,14 +112,23 @@ class DPSolver(object):
         logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
+    def maxStageInParallelJobs(self, BB, all_jobs):
+        """maximize number of runnable tasks"""
+        self.jobs = all_jobs
+        demand = [job.demand.data_in for job in self.jobs]
+        return self.maxNumberTasks(BB, demand)
+
     def maxStageOutParallelJobs(self, BB, all_jobs):
-        return self.maxStageInParallelJobs(BB, all_jobs)
+        """maximize number of runnable tasks"""
+        self.jobs = all_jobs
+        demand = [job.demand.data_out for job in self.jobs]
+        return self.maxNumberTasks(BB, demand)
 
     def maxRunningCpuBb(self, CPU, BB, all_jobs):
         """maximize utilization of (cpu, burst buffer) pair"""
         self.jobs = all_jobs
         cpu_demand = [job.demand.num_core for job in self.jobs]
-        bb_demand = [job.demand.bb for job in self.jobs]
+        bb_demand = [job.demand.data_run for job in self.jobs]
         N = len(cpu_demand)
         CPU = int(CPU)
         # memo[i][c][w] is the optimal solution for jobs[0...i-1] with

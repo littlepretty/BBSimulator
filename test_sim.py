@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from simulator import BBSimulator
-from simulator import BBEventGenerator, BBEventGeneratorBurstBuffer
+from simulator import BBSimulatorDirect, BBSimulatorBurstBuffer
+from simulator import BBEventGeneratorDirect, BBEventGeneratorBurstBuffer
 from scheduler import BBSchedulerDirectIO, BBSchedulerViaBurstBuffer
 from scheduler import BBSchedulerMaxBurstBuffer, BBSchedulerMaxParallel
 from scheduler import BBSystem, BBSystemBurstBuffer
@@ -16,10 +16,10 @@ def testSimulateSchedulerDirectIO():
     io = BBIo(1, 10)
     system = BBSystem(cpu, io)
 
-    generator = BBEventGenerator(system)
+    generator = BBEventGeneratorDirect(system)
     scheduler = BBSchedulerDirectIO(system)
 
-    simulator = BBSimulator()
+    simulator = BBSimulatorDirect()
     simulator.setScheduler(scheduler)
     simulator.setGenerator(generator)
 
@@ -40,7 +40,7 @@ def testSimulateSchedulerBurstBuffer():
     bb_generator = BBEventGeneratorBurstBuffer(bb_system)
     bb_scheduler = BBSchedulerViaBurstBuffer(bb_system)
 
-    bb_simulator = BBSimulator()
+    bb_simulator = BBSimulatorBurstBuffer()
     bb_simulator.setScheduler(bb_scheduler)
     bb_simulator.setGenerator(bb_generator)
 
@@ -58,16 +58,11 @@ def testSimulateSchedulerBurstBuffer():
 
 
 def testSimulateSchedulerMaximizeBB():
-    cpu = BBCpu(100, 100, 1)
-    bb = BBBurstBuffer(1000, 100, 10)
-    io = BBIo(1, 10)
-    bb_system = BBSystemBurstBuffer(cpu, bb, io)
-
     bb_solver = DPSolver()
     bb_generator = BBEventGeneratorBurstBuffer(bb_system)
     bb_scheduler = BBSchedulerMaxBurstBuffer(bb_system, bb_solver)
 
-    bb_simulator = BBSimulator()
+    bb_simulator = BBSimulatorBurstBuffer()
     bb_simulator.setScheduler(bb_scheduler)
     bb_simulator.setGenerator(bb_generator)
 
@@ -85,16 +80,11 @@ def testSimulateSchedulerMaximizeBB():
 
 
 def testSimulateSchedulerMaximizeParallel():
-    cpu = BBCpu(100, 100, 1)
-    bb = BBBurstBuffer(1000, 100, 10)
-    io = BBIo(1, 10)
-    bb_system = BBSystemBurstBuffer(cpu, bb, io)
-
     bb_solver = DPSolver()
     bb_generator = BBEventGeneratorBurstBuffer(bb_system)
     bb_scheduler = BBSchedulerMaxParallel(bb_system, bb_solver)
 
-    bb_simulator = BBSimulator()
+    bb_simulator = BBSimulatorBurstBuffer()
     bb_simulator.setScheduler(bb_scheduler)
     bb_simulator.setGenerator(bb_generator)
 
@@ -114,20 +104,19 @@ if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
 
-    # num_core, bb_in, bb, data_out
-    demand1 = BBJobDemand(30, 800, 400, 500)
-    demand2 = BBJobDemand(60, 800, 500, 200)
-    demand3 = BBJobDemand(40, 180, 600, 100)
-    demand4 = BBJobDemand(30, 100, 800, 800)
-    demand5 = BBJobDemand(40, 180, 100, 400)
+    # num_core, data_in, data_run, data_out
+    demand1 = BBJobDemand(30, 400, 300, 5000)
+    demand2 = BBJobDemand(60, 800, 500, 2000)
+    demand3 = BBJobDemand(40, 900, 600, 1000)
+    demand4 = BBJobDemand(30, 500, 200, 8000)
+    demand5 = BBJobDemand(40, 600, 100, 4000)
 
     cpu = BBCpu(100, 100, 1)
-    bb = BBBurstBuffer(1000, 100, 10)
+    bb = BBBurstBuffer(10000, 100, 10)
     io = BBIo(1, 10)
     bb_system = BBSystemBurstBuffer(cpu, bb, io)
 
     testSimulateSchedulerDirectIO()
     testSimulateSchedulerBurstBuffer()
     testSimulateSchedulerMaximizeBB()
-
     testSimulateSchedulerMaximizeParallel()

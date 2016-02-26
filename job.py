@@ -19,18 +19,17 @@ class BBJobTimeStamp(object):
 
 class BBJobDemand(object):
     """demand statistics"""
-    def __init__(self, num_core, bb_in, bb, data_out):
+    def __init__(self, num_core, data_in, data_run, data_out):
         super(BBJobDemand, self).__init__()
         self.num_core = float(num_core)
-        self.bb_in = float(bb_in)
-        self.bb = float(bb)
         # additional trace data
-        self.data_in = float(bb_in)
+        self.data_in = float(data_in)
+        self.data_run = float(data_run)
         self.data_out = float(data_out)
 
     def __str__(self):
-        return "dv = [%d cores, %.2f in_buffer, %.2f buffer, %.2f out_data]" % \
-            (self.num_core, self.bb_in, self.bb, self.data_out)
+        return " [%d cores, %.2f input_data, %.2f run_data, %.2f output_data]"\
+            % (self.num_core, self.data_in, self.data_run, self.data_out)
 
 
 class BBJobStatus(Enum):
@@ -78,7 +77,23 @@ class BBJob(object):
         return 'job_%d, %s [%s]' % (self.job_id,
                                     self.demand, self.jobStatus())
 
-    def dumpTimeStatistic(self):
+    def dumpTimeStatisticDirect(self):
+        if self.status == BBJobStatus.Complete:
+            submit = self.ts.submit
+            waiting_in = self.ts.start_in - self.ts.submit
+            waiting_run = self.ts.start_run - self.ts.finish_in
+            waiting_out = self.ts.start_out - self.ts.finish_run
+            inputing = self.ts.finish_in - self.ts.start_in
+            running = self.ts.finish_run - self.ts.start_run
+            outputing = self.ts.finish_out - self.ts.start_out
+            complete = self.ts.finish_out
+            total_wait = waiting_in + waiting_run + waiting_out
+            response = complete - submit
+            return [self.job_id, submit, inputing,
+                    running, outputing, complete,
+                    total_wait, response]
+
+    def dumpTimeStatisticBurstBuffer(self):
         if self.status == BBJobStatus.Complete:
             submit = self.ts.submit
             waiting_in = self.ts.start_in - self.ts.submit
