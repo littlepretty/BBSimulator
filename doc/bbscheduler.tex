@@ -396,20 +396,25 @@ Fax: (888) 555--1212}}
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-In an computing world full of Big Data, moderate I/O performance will drastically slow down the overall execution time of applications.
+In an computing world full of Big Data, moderate I/O performance drastically slows down the overall execution time of applications.
 Burst buffer nodes comes to rescue by providing both higher bandwidth and IOPS.
-In this paper, we model the execution of applications on supercomputing system equipped with burst buffer nodes.
-Computing nodes are able to be freed earlier due to these efficient and reliable IO broker, 
+In this paper, we model the execution of scientific applications that generates huge amount of data
+on supercomputing system equipped with burst buffer nodes.
+Computing nodes are then able to be freed earlier due to these efficient and reliable IO broker, 
 possibly improving the utilization of task execution pipeline.
-We thus characterize generic applications by 3 phases: \textit{data stage in} phase, \textit{running} phase and \textit{data stage out} phase.
-Resources in these phases are intuitively scheduled separately targeting on possible different goals.
-In both data stage input and output phase, it is possible to maximize data transfer throughput or task parallelism by allocating burst buffer.
+We thus characterize generic applications by 3 phases:
+\textit{data stage in} phase, \textit{running} phase and \textit{data stage out} phase.
+The novel 3-phase burst buffer aware workload scheduler is proposed on the assumption that
+resources in different phases should be scheduled separately.
+In both data stage input and output phase, it is possible to maximize data transfer throughput or task parallelism when allocating burst buffer.
 In the running phase, we consider maximize the value of scheduling tasks with both computing node resources and burst buffer node demand.
 Further investigating shows that all aforementioned optimization problems are equivalent to 0-1 knapsack problem,
 requiring exponential time to solve.
 We use dynamic programming and memorization technique to give precise solutions.
-We simulate scheduling system in the scenarios both with and without burst buffer on a discrete event simulator to demonstrate that
-1) burst buffer node can accelerate the execution pipeline of all task, thus improving the utilization of the computing nodes as well as task response time
+We simulate our 3 phase scheduler scheduling a supercomputing system in the scenarios 
+both with and without burst buffer on a discrete event simulator to demonstrate that
+1) burst buffer node can accelerate the execution pipeline of all task, 
+thus improving the utilization of the computing nodes as well as task response time
 2) our scheduling algorithm can further benefit burst buffer equipped system.
 \end{abstract}
 
