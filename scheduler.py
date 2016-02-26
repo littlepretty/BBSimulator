@@ -2,6 +2,7 @@
 
 import logging
 from job import BBJobStatus
+from dp_solver import DPSolver
 from tabulate import tabulate
 
 
@@ -285,9 +286,9 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
 
 class BBSchedulerMaxBurstBuffer(BBSchedulerViaBurstBuffer):
     """Maximize burst buffer's total usage with DP"""
-    def __init__(self, system, solver):
+    def __init__(self, system):
         super(BBSchedulerMaxBurstBuffer, self).__init__(system)
-        self.solver = solver
+        self.solver = DPSolver()
 
     def scheduleStageIn(self):
         jobs = []
@@ -328,9 +329,9 @@ class BBSchedulerMaxBurstBuffer(BBSchedulerViaBurstBuffer):
 
 class BBSchedulerMaxParallel(BBSchedulerViaBurstBuffer):
     """Maximize number of tasks possible to run with DP"""
-    def __init__(self, system, solver):
+    def __init__(self, system):
         super(BBSchedulerMaxParallel, self).__init__(system)
-        self.solver = solver
+        self.solver = DPSolver()
 
     def scheduleStageIn(self):
         jobs = []

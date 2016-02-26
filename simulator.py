@@ -60,6 +60,7 @@ class BBEventGeneratorDirect(BBEventGeneratorBase):
         super(BBEventGeneratorDirect, self).__init__(system)
 
     def generateFinishOutput(self, job):
+        """fill in all timestamps once output finishes"""
         input_dur = job.demand.data_in / self.system.io.to_cpu
         output_dur = job.demand.data_out / self.system.cpu.to_io
         run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_io
@@ -94,16 +95,17 @@ class BBEventGeneratorBurstBuffer(BBEventGeneratorBase):
     def __init__(self, system):
         super(BBEventGeneratorBurstBuffer, self).__init__(system)
 
-    def generateFinishRun(self, job):
-        job.ts.finish_run = job.ts.start_run + job.runtime
-        evt = BBEvent(job, job.ts.finish_run, BBEventType.FinishRun)
-        return evt
-
     def generateFinishInput(self, job):
         input_dur = job.demand.data_in / self.system.io.to_bb
         input_dur += job.demand.data_in / self.system.bb.to_cpu
         job.ts.finish_in = job.ts.start_in + input_dur
         evt = BBEvent(job, job.ts.finish_in, BBEventType.FinishIn)
+        return evt
+
+    def generateFinishRun(self, job):
+        run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_bb
+        job.ts.finish_run = job.ts.start_run + run_dur
+        evt = BBEvent(job, job.ts.finish_run, BBEventType.FinishRun)
         return evt
 
     def generateFinishOutput(self, job):
@@ -195,8 +197,9 @@ class BBSimulatorBase(object):
 
 class BBSimulatorDirect(BBSimulatorBase):
     """only simulator cpu and IO"""
-    def __init__(self):
+    def __init__(self, system):
         super(BBSimulatorDirect, self).__init__()
+        self.generator = BBEventGeneratorDirect(system)
 
     def handleEvents(self, events):
         self.virtual_time = events[0].timestamp
@@ -218,8 +221,9 @@ class BBSimulatorDirect(BBSimulatorBase):
 
 class BBSimulatorBurstBuffer(BBSimulatorBase):
     """consider burst buffer, e.g. 3 phase scheduling"""
-    def __init__(self):
+    def __init__(self, system):
         super(BBSimulatorBurstBuffer, self).__init__()
+        self.generator = BBEventGeneratorBurstBuffer(system)
 
     def handleEvents(self, events):
         """trigger scheduler when event happens"""

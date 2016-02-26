@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import logging
+# import logging
 import numpy as np
 from job import BBJob, BBJobDemand
 
@@ -18,10 +18,10 @@ class BBTraceReader(object):
         runtime = row[3]
 
         num_core = row[4]
-        bb_in = row[18]
-        bb = row[19]
+        data_in = row[18]
+        data_run = row[19]
         data_out = row[20]
-        demand = BBJobDemand(num_core, bb_in, bb, data_out)
+        demand = BBJobDemand(num_core, data_in, data_run, data_out)
 
         job = BBJob(job_id, submit, demand, runtime)
         return job
