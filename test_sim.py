@@ -89,11 +89,11 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     # num_core, data_in, data_run, data_out
-    demand1 = BBJobDemand(30, 400, 300, 5000)
-    demand2 = BBJobDemand(60, 800, 500, 2000)
-    demand3 = BBJobDemand(40, 900, 600, 1000)
-    demand4 = BBJobDemand(30, 500, 200, 8000)
-    demand5 = BBJobDemand(40, 600, 100, 4000)
+    demand1 = BBJobDemand(30, 400, 3000, 5000)
+    demand2 = BBJobDemand(60, 800, 5000, 2000)
+    demand3 = BBJobDemand(40, 900, 6000, 1000)
+    demand4 = BBJobDemand(30, 500, 2000, 8000)
+    demand5 = BBJobDemand(40, 600, 1000, 4000)
 
     cpu = BBCpu(100, 100, 1)
     bb = BBBurstBuffer(10000, 100, 10)

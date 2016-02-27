@@ -120,7 +120,7 @@ class BBSchedulerDirectIO(BBSchedulerBase):
         jobs = []
         # sort descendingly, max cpu utilization
         # sort ascendingly, max parallelism
-        self.direct_q.sort(key=lambda job: job.demand.num_core)
+        # self.direct_q.sort(key=lambda job: job.demand.num_core)
         while len(self.direct_q) > 0 and \
                 self.system.cpu.available >= self.direct_q[0].demand.num_core:
             job = self.direct_q.pop(0)
@@ -199,7 +199,7 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
         jobs = []
         # sort descendingly, max data throughput
         # sort ascendingly, max parallelism
-        self.input_q.sort(key=lambda job: job.demand.data_in)
+        # self.input_q.sort(key=lambda job: job.demand.data_in)
         while len(self.input_q) > 0 and \
                 self.system.bb.available >= self.input_q[0].demand.data_in:
             job = self.input_q.pop(0)
@@ -210,7 +210,7 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
     def scheduleRun(self):
         "greedily choose jobs s.t. max|jobs| with cpu and bb constraint"
         jobs = []
-        self.run_q.sort(key=lambda job: job.demand.num_core)
+        # self.run_q.sort(key=lambda job: job.demand.num_core)
         while len(self.run_q) > 0 and \
                 self.system.cpu.available >= self.run_q[0].demand.num_core and\
                 self.system.bb.available >= self.run_q[0].demand.data_run:
@@ -223,7 +223,7 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
     def scheduleStageOut(self):
         "greedily choose jobs s.t. max|jobs| with bb constraint"
         jobs = []
-        self.output_q.sort(key=lambda job: job.demand.data_out)
+        # self.output_q.sort(key=lambda job: job.demand.data_out)
         while len(self.output_q) > 0 and \
                 self.system.bb.available >= self.output_q[0].demand.data_out:
             job = self.output_q.pop(0)
