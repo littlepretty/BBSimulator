@@ -61,9 +61,9 @@ if __name__ == '__main__':
     # num_core, to_bb, to_io
     cpu = BBCpu(16, 100, 1)
     # capacity, to_cpu, to_io
-    bb = BBBurstBuffer(2000, 100, 10)
+    # bb = BBBurstBuffer(2000, 100, 10)
     # this setting make naive burst buffer unable to finish all tasks
-    # bb = BBBurstBuffer(1000, 100, 10)
+    bb = BBBurstBuffer(1000, 100, 10)
     # to_cpu, to_bb
     io = BBIo(1, 10)
     system = BBSystemBurstBuffer(cpu, bb, io)
