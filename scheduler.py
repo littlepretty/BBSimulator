@@ -4,6 +4,7 @@ import logging
 from job import BBJobStatus
 from dp_solver import DPSolver
 from tabulate import tabulate
+import csv
 
 
 class BBResource(object):
@@ -98,6 +99,11 @@ class BBSchedulerBase(object):
     def schedule(self, now):
         return self.scheduleCore(now)
 
+    def dumpJobSummary(self):
+        pass
+
+    def outputJobSummary(self, filename):
+        pass
 
 class BBSchedulerDirectIO(BBSchedulerBase):
     """scheduler don't know burst buffer"""
@@ -150,8 +156,19 @@ class BBSchedulerDirectIO(BBSchedulerBase):
             if job.status == BBJobStatus.Complete:
                 statistic = job.dumpTimeStatisticDirect()
                 table.append(statistic)
-        logging.info('\n%s' % tabulate(table, headers="firstrow",
-                                       tablefmt='fancy_grid'))
+        tabulate(table, headers="firstrow", tablefmt='plain')
+
+    def outputJobSummary(self, filename):
+        writer = csv.writer(open(filename, 'w'))
+        first_row = ['id', 'submit', 'input', 'run',
+                     'output', 'complete', 'wait',
+                     'response']
+        self.complete_q.sort(key=lambda job: job.job_id)
+        writer.writerow(first_row)
+        for job in self.complete_q:
+            if job.status == BBJobStatus.Complete:
+                statistic = job.dumpTimeStatisticDirect()
+                writer.writerow(statistic)
 
 
 class BBSchedulerViaBurstBuffer(BBSchedulerBase):
@@ -282,6 +299,19 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
                 table.append(statistic)
         logging.info('\n%s' % tabulate(table, headers="firstrow",
                                        tablefmt='fancy_grid'))
+
+    def outputJobSummary(self, filename):
+        writer = csv.writer(open(filename, 'w'))
+        first_row = ['id', 'submit', 'wait in', 'input',
+                     'wait run', 'run', 'wait out',
+                     'output', 'complete', 'wait',
+                     'response']
+        writer.writerow(first_row)
+        self.complete_q.sort(key=lambda job: job.job_id)
+        for job in self.complete_q:
+            if job.status == BBJobStatus.Complete:
+                statistic = job.dumpTimeStatisticBurstBuffer()
+                writer.writerow(statistic)
 
 
 class BBSchedulerMaxBurstBuffer(BBSchedulerViaBurstBuffer):

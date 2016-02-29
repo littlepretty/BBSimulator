@@ -192,12 +192,11 @@ class BBSimulatorBase(object):
             evts = self.nextEvents()
             self.handleEvents(evts)
         self.dumpEventQueue()
-        self.scheduler.dumpJobSummary()
 
 
 class BBSimulatorDirect(BBSimulatorBase):
     """only simulator cpu and IO"""
-    def __init__(self, system):
+    def __init__(self, output_filename, system):
         super(BBSimulatorDirect, self).__init__()
         self.generator = BBEventGeneratorDirect(system)
 

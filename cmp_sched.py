@@ -9,7 +9,7 @@ import logging
 
 
 def testSimulateSchedulerDirectIO():
-    trace_reader = BBTraceReader('test.swf')
+    trace_reader = BBTraceReader('test.swf.bb')
     jobs = trace_reader.generateJobs()
 
     scheduler = BBSchedulerDirectIO(system)
@@ -20,7 +20,7 @@ def testSimulateSchedulerDirectIO():
 
 
 def testSimulateSchedulerBurstBuffer():
-    trace_reader = BBTraceReader('test.swf')
+    trace_reader = BBTraceReader('test.swf.bb')
     jobs = trace_reader.generateJobs()
 
     bb_scheduler = BBSchedulerViaBurstBuffer(system)
@@ -31,7 +31,7 @@ def testSimulateSchedulerBurstBuffer():
 
 
 def testSimulateSchedulerMaximizeBB():
-    trace_reader = BBTraceReader('test.swf')
+    trace_reader = BBTraceReader('test.swf.bb')
     jobs = trace_reader.generateJobs()
 
     bb_scheduler = BBSchedulerMaxBurstBuffer(system)
@@ -43,7 +43,7 @@ def testSimulateSchedulerMaximizeBB():
 
 
 def testSimulateSchedulerMaximizeParallel():
-    trace_reader = BBTraceReader('test.swf')
+    trace_reader = BBTraceReader('test.swf.bb')
     jobs = trace_reader.generateJobs()
 
     bb_scheduler = BBSchedulerMaxParallel(system)
