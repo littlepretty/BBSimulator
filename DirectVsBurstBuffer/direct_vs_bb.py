@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-from simulator import BBSimulatorBurstBuffer, BBSimulatorDirect
-from scheduler import BBSchedulerViaBurstBuffer, BBSchedulerDirectIO
-from scheduler import BBSystemBurstBuffer
-from scheduler import BBCpu, BBBurstBuffer, BBIo
-from trace_reader import BBTraceReader
+from bbsimulator.simulator import BBSimulatorBurstBuffer, BBSimulatorDirect
+from bbsimulator.scheduler import BBSchedulerViaBurstBuffer
+from bbsimulator.scheduler import BBSchedulerDirectIO
+from bbsimulator.scheduler import BBSystemBurstBuffer
+from bbsimulator.scheduler import BBCpu, BBBurstBuffer, BBIo
+from bbsimulator.trace_reader import BBTraceReader
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
@@ -58,8 +59,7 @@ def cdfPlot(prefix, column='response'):
              color='blue', linestyle='--')
     plt.plot(sorted_time1, yvals1*100, label='plain', linewidth=3,
              color='red', linestyle='--')
-    plt.legend()
-    # plt.show()
+    plt.legend(loc='lower right')
     plt.savefig(prefix + '_direct_vs_bb.eps', format='eps')
 
 if __name__ == '__main__':
@@ -72,9 +72,9 @@ if __name__ == '__main__':
                   [40000, 100000, 1000]]
     trace_reader.patchTraceFile(data_range)
 
-    cpu = BBCpu(163840, 4000, 4)
-    bb = BBBurstBuffer(1600000, 4000, 40)
-    io = BBIo(4, 40)
+    cpu = BBCpu(163840, 4000, 40)
+    bb = BBBurstBuffer(1600000, 4000, 400)
+    io = BBIo(40, 400)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
     runDirectIOScheduler()

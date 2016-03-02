@@ -31,7 +31,7 @@ data3 = np.genfromtxt(file_prefix + '_maxbb.out.csv', delimiter=',',
                                             'wait_out', 'oput', 'complete',
                                             'wait', 'response'])
 
-column = 'wait_in'
+column = 'response'
 
 # time0 = data0[column]
 time1 = data1[column]
@@ -60,5 +60,5 @@ plt.plot(sorted_time2, yvals2*100, label='maxbb', linewidth=3,
          color='red', linestyle='--')
 plt.plot(sorted_time3, yvals3*100, label='maxpar', linewidth=3,
          color='green', linestyle='--')
-plt.legend()
+plt.legend(loc='lower right')
 plt.show()
