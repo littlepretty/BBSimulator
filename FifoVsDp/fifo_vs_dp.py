@@ -84,19 +84,19 @@ def cdfPlot(prefix, column='wait'):
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
-    file_prefix = '100jobs'
+    file_prefix = '100jobs_small_data'
     trace_reader = BBTraceReader(file_prefix + '.swf')
-    data_range = [[10000, 40000, 1000],
-                  [20000, 60000, 1000],
-                  [40000, 100000, 1000]]
+    data_range = [[1000, 4000, 100],
+                  [2000, 6000, 100],
+                  [4000, 10000, 100]]
     trace_reader.patchTraceFile(data_range, mod_submit=True)
 
     cpu = BBCpu(163840, 4000, 4)
-    bb = BBBurstBuffer(1600000, 4000, 40)
+    bb = BBBurstBuffer(160000, 4000, 40)
     io = BBIo(4, 40)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
-    # runPlainBBScheduler()
-    # runMaxParallelScheduler()
-    # runMaxBBScheduler()
+    runPlainBBScheduler()
+    runMaxParallelScheduler()
+    runMaxBBScheduler()
     cdfPlot(file_prefix)
