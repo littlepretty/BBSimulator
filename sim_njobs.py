@@ -55,16 +55,16 @@ def runMaxParallelScheduler():
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
-    file_prefix = '100jobs'
+    file_prefix = '1000jobs'
     trace_reader = BBTraceReader(file_prefix + '.swf')
-    data_range = [[1000, 4000, 100],
-                  [2000, 8000, 100],
-                  [4000, 10000, 100]]
+    data_range = [[10000, 40000, 1000],
+                  [20000, 60000, 1000],
+                  [40000, 100000, 1000]]
     trace_reader.patchTraceFile(data_range)
 
-    cpu = BBCpu(163840, 4000, 400)
-    bb = BBBurstBuffer(80000, 4000, 4000)
-    io = BBIo(400, 4000)
+    cpu = BBCpu(163840, 4000, 4)
+    bb = BBBurstBuffer(1600000, 4000, 40)
+    io = BBIo(4, 40)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
     runDirectIOScheduler()

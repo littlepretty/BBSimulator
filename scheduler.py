@@ -105,6 +105,7 @@ class BBSchedulerBase(object):
     def outputJobSummary(self, filename):
         pass
 
+
 class BBSchedulerDirectIO(BBSchedulerBase):
     """scheduler don't know burst buffer"""
     def __init__(self, system):
@@ -151,7 +152,7 @@ class BBSchedulerDirectIO(BBSchedulerBase):
                      'output', 'complete', 'wait',
                      'response']
         table.append(first_row)
-        self.complete_q.sort(key=lambda job: job.job_id)
+        # self.complete_q.sort(key=lambda job: job.job_id)
         for job in self.complete_q:
             if job.status == BBJobStatus.Complete:
                 statistic = job.dumpTimeStatisticDirect()
@@ -163,8 +164,8 @@ class BBSchedulerDirectIO(BBSchedulerBase):
         first_row = ['id', 'submit', 'input', 'run',
                      'output', 'complete', 'wait',
                      'response']
-        self.complete_q.sort(key=lambda job: job.job_id)
         writer.writerow(first_row)
+        # self.complete_q.sort(key=lambda job: job.job_id)
         for job in self.complete_q:
             if job.status == BBJobStatus.Complete:
                 statistic = job.dumpTimeStatisticDirect()
@@ -292,7 +293,7 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
                      'output', 'complete', 'wait',
                      'response']
         table.append(first_row)
-        self.complete_q.sort(key=lambda job: job.job_id)
+        # self.complete_q.sort(key=lambda job: job.job_id)
         for job in self.complete_q:
             if job.status == BBJobStatus.Complete:
                 statistic = job.dumpTimeStatisticBurstBuffer()
@@ -307,7 +308,7 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
                      'output', 'complete', 'wait',
                      'response']
         writer.writerow(first_row)
-        self.complete_q.sort(key=lambda job: job.job_id)
+        # self.complete_q.sort(key=lambda job: job.job_id)
         for job in self.complete_q:
             if job.status == BBJobStatus.Complete:
                 statistic = job.dumpTimeStatisticBurstBuffer()
