@@ -196,7 +196,7 @@ class BBSimulatorBase(object):
 
 class BBSimulatorDirect(BBSimulatorBase):
     """only simulator cpu and IO"""
-    def __init__(self, output_filename, system):
+    def __init__(self, system):
         super(BBSimulatorDirect, self).__init__()
         self.generator = BBEventGeneratorDirect(system)
 

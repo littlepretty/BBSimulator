@@ -1,11 +1,23 @@
 #!/usr/bin/env python
 
-from simulator import BBSimulatorBurstBuffer
-from scheduler import BBSchedulerViaBurstBuffer
+from simulator import BBSimulatorBurstBuffer, BBSimulatorDirect
+from scheduler import BBSchedulerViaBurstBuffer, BBSchedulerDirectIO
 from scheduler import BBSchedulerMaxBurstBuffer, BBSchedulerMaxParallel
-from scheduler import BBSystemBurstBuffer, BBCpu, BBBurstBuffer, BBIo
+from scheduler import BBSystemBurstBuffer
+from scheduler import BBCpu, BBBurstBuffer, BBIo
 from trace_reader import BBTraceReader
 import logging
+
+
+def runDirectIOScheduler():
+    simulator = BBSimulatorDirect(system)
+    scheduler = BBSchedulerDirectIO(system)
+    simulator.setScheduler(scheduler)
+
+    jobs = trace_reader.generateJobs()
+
+    simulator.simulate(jobs)
+    scheduler.outputJobSummary(file_prefix + '_direct.out.csv')
 
 
 def runPlainBBScheduler():
@@ -43,18 +55,19 @@ def runMaxParallelScheduler():
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
-    file_prefix = '1000jobs'
+    file_prefix = '100jobs'
     trace_reader = BBTraceReader(file_prefix + '.swf')
     data_range = [[1000, 4000, 100],
                   [2000, 8000, 100],
                   [4000, 10000, 100]]
     trace_reader.patchTraceFile(data_range)
 
-    cpu = BBCpu(163840, 16000, 1600)
-    bb = BBBurstBuffer(400000, 16000, 16000)
-    io = BBIo(1600, 16000)
+    cpu = BBCpu(163840, 4000, 400)
+    bb = BBBurstBuffer(80000, 4000, 4000)
+    io = BBIo(400, 4000)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
+    runDirectIOScheduler()
     runPlainBBScheduler()
     runMaxParallelScheduler()
     runMaxBBScheduler()
