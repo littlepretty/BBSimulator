@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from simulator import BBSimulatorDirect, BBSimulatorBurstBuffer
+from bbsimulator.simulator import BBSimulatorDirect, BBSimulatorBurstBuffer
 from scheduler import BBSystemBurstBuffer, BBCpu, BBBurstBuffer, BBIo
 from scheduler import BBSchedulerDirectIO, BBSchedulerViaBurstBuffer
 from scheduler import BBSchedulerMaxBurstBuffer, BBSchedulerMaxParallel
@@ -11,46 +11,36 @@ import logging
 def testSimulateSchedulerDirectIO():
     trace_reader = BBTraceReader('test.swf.bb')
     jobs = trace_reader.generateJobs()
-
     scheduler = BBSchedulerDirectIO(system)
     simulator = BBSimulatorDirect(system)
     simulator.setScheduler(scheduler)
-
     simulator.simulate(jobs)
 
 
 def testSimulateSchedulerBurstBuffer():
     trace_reader = BBTraceReader('test.swf.bb')
     jobs = trace_reader.generateJobs()
-
     bb_scheduler = BBSchedulerViaBurstBuffer(system)
     bb_simulator = BBSimulatorBurstBuffer(system)
     bb_simulator.setScheduler(bb_scheduler)
-
     bb_simulator.simulate(jobs)
 
 
 def testSimulateSchedulerMaximizeBB():
     trace_reader = BBTraceReader('test.swf.bb')
     jobs = trace_reader.generateJobs()
-
     bb_scheduler = BBSchedulerMaxBurstBuffer(system)
-
     bb_simulator = BBSimulatorBurstBuffer(system)
     bb_simulator.setScheduler(bb_scheduler)
-
     bb_simulator.simulate(jobs)
 
 
 def testSimulateSchedulerMaximizeParallel():
     trace_reader = BBTraceReader('test.swf.bb')
     jobs = trace_reader.generateJobs()
-
     bb_scheduler = BBSchedulerMaxParallel(system)
-
     bb_simulator = BBSimulatorBurstBuffer(system)
     bb_simulator.setScheduler(bb_scheduler)
-
     bb_simulator.simulate(jobs)
 
 
