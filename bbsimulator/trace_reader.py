@@ -15,7 +15,33 @@ class BBTraceReader(object):
 
         seed(random_seed)
 
-    def patchTraceFile(self, data_range, mod_submit=False):
+    def patchTraceFileOnePhase(self, data, mod_submit=False):
+        trace = np.loadtxt(self.input_filename, comments=';')
+        output_file = open(self.output_filename, 'w')
+
+        size = len(trace)
+
+        lam = 10
+        if mod_submit:
+            poisson = np.random.poisson(lam, size)
+            submissions = np.cumsum(poisson)
+
+        i = 0
+        d = 0
+        for row in trace:
+            if mod_submit:
+                row[1] = submissions[i]
+                i += 1
+            for x in row:
+                output_file.write("%.2f\t" % x)
+            output_file.write('%.2f\t' % data[d])
+            output_file.write('%.2f\t' % data[d])
+            output_file.write('%.2f\t' % data[d])
+            d += 1
+            output_file.write('\n')
+        output_file.close()
+
+    def patchTraceFileThreePhases(self, data_range, mod_submit=False):
         trace = np.loadtxt(self.input_filename, comments=';')
         output_file = open(self.output_filename, 'w')
 
@@ -31,10 +57,7 @@ class BBTraceReader(object):
         self.data_out_hi = data_range[2][1]
         self.data_out_step = data_range[2][2]
         size = len(trace)
-        data_in = []
-        data_run = []
-        data_out = []
-
+        max_random_data = []
         lam = 10
         if mod_submit:
             poisson = np.random.poisson(lam, size)
@@ -48,6 +71,10 @@ class BBTraceReader(object):
                                  self.data_run_hi, self.data_run_step)
             data_out = randrange(self.data_out_low,
                                  self.data_out_hi, self.data_out_step)
+            data_max = max(data_in, data_run, data_out)
+
+            max_random_data.append(data_max)
+
             if mod_submit:
                 row[1] = submissions[i]
                 i += 1
@@ -58,6 +85,7 @@ class BBTraceReader(object):
             output_file.write('%.2f\t' % data_out)
             output_file.write('\n')
         output_file.close()
+        return max_random_data
 
     def generateJob(self, row):
         """convert one row of data to job object"""

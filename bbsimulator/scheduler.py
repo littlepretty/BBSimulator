@@ -106,10 +106,10 @@ class BBSchedulerBase(object):
         pass
 
 
-class BBSchedulerDirectIO(BBSchedulerBase):
-    """scheduler don't know burst buffer"""
+class BBSchedulerDirect(BBSchedulerBase):
+    """1 phase scheduler with burst buffer demand"""
     def __init__(self, system):
-        super(BBSchedulerDirectIO, self).__init__(system)
+        super(BBSchedulerDirect, self).__init__(system)
         self.direct_q = []
 
     def insertToDirectQ(self, job):
@@ -123,17 +123,7 @@ class BBSchedulerDirectIO(BBSchedulerBase):
         self.complete_q.append(job)
 
     def scheduleDirect(self):
-        "return jobs with status running"
-        jobs = []
-        # sort descendingly, max cpu utilization
-        # sort ascendingly, max parallelism
-        # self.direct_q.sort(key=lambda job: job.demand.num_core)
-        while len(self.direct_q) > 0 and \
-                self.system.cpu.available >= self.direct_q[0].demand.num_core:
-            job = self.direct_q.pop(0)
-            self.system.cpu.available -= job.demand.num_core
-            jobs.append(job)
-        return jobs
+        return []
 
     def scheduleCore(self, now):
         jobs = self.scheduleDirect()
@@ -170,6 +160,49 @@ class BBSchedulerDirectIO(BBSchedulerBase):
             if job.status == BBJobStatus.Complete:
                 statistic = job.dumpTimeStatisticDirect()
                 writer.writerow(statistic)
+
+
+class BBSchedulerDirectIO(BBSchedulerDirect):
+    """scheduler don't know burst buffer"""
+    def __init__(self, system):
+        super(BBSchedulerDirectIO, self).__init__(system)
+
+    def scheduleDirect(self):
+        "return jobs with status running"
+        jobs = []
+        # sort descendingly, max cpu utilization
+        # sort ascendingly, max parallelism
+        # self.direct_q.sort(key=lambda job: job.demand.num_core)
+        while len(self.direct_q) > 0 and \
+                self.system.cpu.available >= self.direct_q[0].demand.num_core:
+            job = self.direct_q.pop(0)
+            self.system.cpu.available -= job.demand.num_core
+            jobs.append(job)
+        return jobs
+
+
+class BBSchedulerDirectBurstBuffer(BBSchedulerDirect):
+    """consider burst buffer constraint"""
+    def __init__(self, system):
+        super(BBSchedulerDirectBurstBuffer, self).__init__(system)
+
+    def insertToCompleteQ(self, job):
+        job.status = BBJobStatus.Complete
+        self.system.cpu.available += job.demand.num_core
+        self.system.bb.available += job.demand.data_in
+        self.complete_q.append(job)
+
+    def scheduleDirect(self):
+        jobs = []
+        while len(self.direct_q) > 0 and \
+                self.system.cpu.available >= \
+                self.direct_q[0].demand.num_core and \
+                self.system.bb.available >= self.direct_q[0].demand.data_in:
+            job = self.direct_q.pop(0)
+            self.system.cpu.available -= job.demand.num_core
+            self.system.bb.available -= job.demand.data_in
+            jobs.append(job)
+        return jobs
 
 
 class BBSchedulerViaBurstBuffer(BBSchedulerBase):
