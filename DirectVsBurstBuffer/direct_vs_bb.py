@@ -60,6 +60,7 @@ def cdfPlot(prefix, column='response'):
     plt.plot(sorted_time1, yvals1*100, label='plain', linewidth=3,
              color='red', linestyle='--')
     plt.legend(loc='lower right')
+    # plt.xlim([0, 100000])
     plt.savefig(prefix + '_direct_vs_bb.eps', format='eps')
 
 if __name__ == '__main__':
@@ -67,14 +68,14 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     file_prefix = '1000jobs'
     trace_reader = BBTraceReader(file_prefix + '.swf')
-    data_range = [[10000, 40000, 1000],
-                  [20000, 60000, 1000],
-                  [40000, 100000, 1000]]
-    trace_reader.patchTraceFile(data_range)
+    data_range = [[10, 40, 10],
+                  [2000, 6000, 1000],
+                  [4000, 10000, 1000]]
+    trace_reader.patchTraceFile(data_range, mod_submit=True)
 
-    cpu = BBCpu(163840, 4000, 40)
+    cpu = BBCpu(163840, 4000, 7.5)
     bb = BBBurstBuffer(1600000, 4000, 400)
-    io = BBIo(40, 400)
+    io = BBIo(7.5, 400)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
     runDirectIOScheduler()
