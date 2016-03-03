@@ -96,7 +96,7 @@ if __name__ == '__main__':
     io = BBIo(4, 40)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
-    runPlainBBScheduler()
-    runMaxParallelScheduler()
-    runMaxBBScheduler()
-    cdfPlot(file_prefix)
+    # runPlainBBScheduler()
+    # runMaxParallelScheduler()
+    # runMaxBBScheduler()
+    cdfPlot(file_prefix, 'response')
