@@ -77,10 +77,8 @@ def cdfPlot(prefix, column='response'):
 
     time0 = data0[column]
     time1 = data1[column]
-    # time2 = data2[column]
-    # time3 = data3[column]
-    time2 = data2['wait_in']
-    time3 = data3['wait_in']
+    time2 = data2[column]
+    time3 = data3[column]
     time2 = [x for x in time2 if x > 10.0]
     time3 = [x for x in time3 if x > 10.0]
 
@@ -107,6 +105,8 @@ def cdfPlot(prefix, column='response'):
     plt.legend(loc='lower right')
     # plt.xlim([0, 100000])
     plt.savefig(prefix + '_direct_vs_bb.eps', format='eps')
+    plt.show()
+
 
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
@@ -118,9 +118,9 @@ if __name__ == '__main__':
     bb = BBBurstBuffer(400000, 4000, 40)
     io = BBIo(7.5, 40)
     system = BBSystemBurstBuffer(cpu, bb, io)
-    data_range3 = [[8000, 10000, 10],
-                   [4000, 10000, 10],
-                   [6000, 10000, 10]]
+    data_range3 = [[4000, 10000, 100],
+                   [4000, 10000, 100],
+                   [6000, 10000, 100]]
 
     random_data = threePhaseDifferentData(data_range3)
     threePhaseSameData(random_data)
