@@ -1,0 +1,24 @@
+\section{Simulation Results}
+We consider the full Trinity platform super computer.
+Number of compute nodes is about 18936, 9436(Intel Haswell) and 9500(Intel Xeon Phi) nodes.
+It has 576 burst buffer nodes each with 3.3 TB/s bandwidth, total capacity 3.7 PB.
+Lustre Parallel File System support 39 PB storage capacity with 7.5 GB/s sustained bandwidth.
+
+Simulation setting:
+40960 compute nodes, 163840 cores.
+Bandwidth between Burst buffer nodes and compute nodes is 3.3 TB/s
+Bandwidth between CPU and IO nodes is 7.5 GB/s.
+
+We use discrete event simulation to address the following questions.
+Will Cerberus improve application performance by utilizing burst buffer nodes?
+Can Cerberus with optimization improve application performance?
+Will job demand on burst buffer effect Cerberus?
+
+\subsection{Cerberus vs. 1-Phase Batch Scheduler}
+In this section, we 
+
+\subsection{Cerberus vs. Cerberus with Optimization}
+
+
+\subsection{Cerberus vs. Demand Granularity}
+

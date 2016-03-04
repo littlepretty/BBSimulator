@@ -1,0 +1,44 @@
+\section{Modeling HPC System}
+\subsection{System Resources}
+The system contains resources like compute node, main memory, burst buffer and IO node.
+In most system architecture, compute node are coupled with main memory.
+Since IO capacity is more than sufficient, We assume IO nodes are always available.
+Therefore, the schedule targets are modeled as compute node and burst buffer.
+We consider a system with $CN$ compute nodes and $BB$ GB of burst buffer.
+Burst buffer are able to be shared by applications with any fraction of total amount.
+Later we will see that when doing optimal scheduling, we may need to allocate by a fixed
+fraction of the total resources(number of compute nodes or amount of burst buffer).
+
+\subsection{User Jobs}
+Users request the system to run their applications as jobs.
+We define $J = (job_1, job_2,..., job_n)$ to be the set of all jobs in the system during
+a period of time interested.
+Job consists of 3 different phases.
+In the first phases, input data are load in from IO nodes to burst buffer.
+We refer this phase as \textit{stage-in} phase.
+It is very easy for user to provide the amount of load-in data because input data is available before application execution. 
+Then the job can run on the compute nodes when been scheduled;
+except reading data from burst buffer, there may or may not be any interaction between computer node and burst buffer.
+These interactions are mainly due to fault tolerance reasons, like check-pointing.
+This phase is called \textit{running} phase.
+When computation is done, output data needs to be staged out to IO nodes from memory or burst buffer, namely \textit{stage-out} phase.
+Burst buffer plays as IO agent for compute node.
+From the view point of compute node, it uses burst buffer as IO nodes.
+For a job at the stage-in phase, compute nodes is not allocated to it yet but it will not effect reading in data.
+When scheduler allocate compute nodes to a job, these nodes are exclusively used by this job until it enters stage-out phase.
+Compute nodes are release as soon as computation is done, meaning they are available for jobs waiting to be run.
+Staging output data out to IO node is the business just between burst buffer and IO nodes.
+
+
+\subsection{Resource Demand}
+Users typically provide their resource demand for their jobs.
+This is the most important information scheduler could get from the users.
+Therefore, each job is associated with a demand vector in the form of $(c, bb\_in, bb\_run, bb\_out)$,
+where $c$ is the number of needed compute node in running phase,
+$bb\_in$ is the volume of burst buffer user predicted for file stage in,
+$bb\_run$ is the volume of burst buffer user preferred for checkpointing during running,
+$bb\_out$ is the volume of burst buffer needed to hold the resulting output data.
+A lazy user may just use the $\max\{bb\_in, bb\_run, bb\_out\}$ at every stage.
+However, we do not make any assumption about $bb\_run$ and $bb\_out$ because it is nontrivial to predict them,
+both for system scheduler and application owner.
+
