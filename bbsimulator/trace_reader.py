@@ -8,11 +8,11 @@ from job import BBJob, BBJobDemand
 
 class BBTraceReader(object):
     """Read in swf trace file"""
-    def __init__(self, filename, random_seed=None):
+    def __init__(self, filename, lam, random_seed=None):
         super(BBTraceReader, self).__init__()
         self.input_filename = filename
         self.output_filename = filename + '.bb'
-
+        self.lam = lam
         seed(random_seed)
 
     def patchTraceFileOnePhase(self, data, mod_submit=False):
@@ -21,9 +21,8 @@ class BBTraceReader(object):
 
         size = len(trace)
 
-        lam = 10
         if mod_submit:
-            poisson = np.random.poisson(lam, size)
+            poisson = np.random.poisson(self.lam, size)
             submissions = np.cumsum(poisson)
 
         i = 0
@@ -58,9 +57,8 @@ class BBTraceReader(object):
         self.data_out_step = data_range[2][2]
         size = len(trace)
         max_random_data = []
-        lam = 10
         if mod_submit:
-            poisson = np.random.poisson(lam, size)
+            poisson = np.random.poisson(self.lam, size)
             submissions = np.cumsum(poisson)
 
         i = 0

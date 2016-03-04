@@ -181,10 +181,10 @@ class BBSchedulerDirectIO(BBSchedulerDirect):
         return jobs
 
 
-class BBSchedulerDirectBurstBuffer(BBSchedulerDirect):
+class BBSchedulerDirectBB(BBSchedulerDirect):
     """consider burst buffer constraint"""
     def __init__(self, system):
-        super(BBSchedulerDirectBurstBuffer, self).__init__(system)
+        super(BBSchedulerDirectBB, self).__init__(system)
 
     def insertToCompleteQ(self, job):
         job.status = BBJobStatus.Complete
@@ -205,10 +205,10 @@ class BBSchedulerDirectBurstBuffer(BBSchedulerDirect):
         return jobs
 
 
-class BBSchedulerViaBurstBuffer(BBSchedulerBase):
+class BBSchedulerCerberus(BBSchedulerBase):
     """scheduler knows burst buffer"""
     def __init__(self, system):
-        super(BBSchedulerViaBurstBuffer, self).__init__(system)
+        super(BBSchedulerCerberus, self).__init__(system)
         self.input_q = []
         self.run_q = []
         self.output_q = []
@@ -348,7 +348,7 @@ class BBSchedulerViaBurstBuffer(BBSchedulerBase):
                 writer.writerow(statistic)
 
 
-class BBSchedulerMaxBurstBuffer(BBSchedulerViaBurstBuffer):
+class BBSchedulerMaxBurstBuffer(BBSchedulerCerberus):
     """Maximize burst buffer's total usage with DP"""
     def __init__(self, system):
         super(BBSchedulerMaxBurstBuffer, self).__init__(system)
@@ -391,7 +391,7 @@ class BBSchedulerMaxBurstBuffer(BBSchedulerViaBurstBuffer):
         return jobs
 
 
-class BBSchedulerMaxParallel(BBSchedulerViaBurstBuffer):
+class BBSchedulerMaxParallel(BBSchedulerCerberus):
     """Maximize number of tasks possible to run with DP"""
     def __init__(self, system):
         super(BBSchedulerMaxParallel, self).__init__(system)

@@ -61,16 +61,7 @@ class BBEventGeneratorDirect(BBEventGeneratorBase):
 
     def generateFinishOutput(self, job):
         """fill in all timestamps once output finishes"""
-        input_dur = job.demand.data_in / self.system.io.to_cpu
-        output_dur = job.demand.data_out / self.system.cpu.to_io
-        run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_io
-        job.ts.finish_in = job.ts.start_in + input_dur
-        job.ts.start_run = job.ts.finish_in
-        job.ts.finish_run = job.ts.start_run + run_dur
-        job.ts.start_out = job.ts.finish_run
-        job.ts.finish_out = job.ts.start_out + output_dur
-        evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
-        return evt
+        return []
 
     def generateEvents(self, jobs):
         """generate new events based on schedule results"""
@@ -90,14 +81,52 @@ class BBEventGeneratorDirect(BBEventGeneratorBase):
         return events
 
 
-class BBEventGeneratorBurstBuffer(BBEventGeneratorBase):
+class BBEventGeneratorDirectIO(BBEventGeneratorDirect):
+    """generate events with CPU and IO system resource"""
+    def __init__(self, system):
+        super(BBEventGeneratorDirectIO, self).__init__(system)
+
+    def generateFinishOutput(self, job):
+        """fill in all timestamps once output finishes"""
+        input_dur = job.demand.data_in / self.system.io.to_cpu
+        output_dur = job.demand.data_out / self.system.cpu.to_io
+        run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_io
+        job.ts.finish_in = job.ts.start_in + input_dur
+        job.ts.start_run = job.ts.finish_in
+        job.ts.finish_run = job.ts.start_run + run_dur
+        job.ts.start_out = job.ts.finish_run
+        job.ts.finish_out = job.ts.start_out + output_dur
+        evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
+        return evt
+
+
+class BBEventGeneratorDirectBB(BBEventGeneratorDirect):
+    """generate events with CPU and IO system resource"""
+    def __init__(self, system):
+        super(BBEventGeneratorDirectBB, self).__init__(system)
+
+    def generateFinishOutput(self, job):
+        """fill in all timestamps once output finishes"""
+        input_dur = job.demand.data_in / self.system.bb.to_cpu
+        output_dur = job.demand.data_out / self.system.cpu.to_bb
+        run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_bb
+        job.ts.finish_in = job.ts.start_in + input_dur
+        job.ts.start_run = job.ts.finish_in
+        job.ts.finish_run = job.ts.start_run + run_dur
+        job.ts.start_out = job.ts.finish_run
+        job.ts.finish_out = job.ts.start_out + output_dur
+        evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
+        return evt
+
+
+class BBEventGeneratorCerberus(BBEventGeneratorBase):
     """generate events with CPU, burst buffer and IO system resource"""
     def __init__(self, system):
-        super(BBEventGeneratorBurstBuffer, self).__init__(system)
+        super(BBEventGeneratorCerberus, self).__init__(system)
 
     def generateFinishInput(self, job):
-        input_dur = job.demand.data_in / self.system.io.to_bb
-        input_dur += job.demand.data_in / self.system.bb.to_cpu
+        # input_dur = job.demand.data_in / self.system.io.to_bb
+        input_dur = job.demand.data_in / self.system.bb.to_cpu
         job.ts.finish_in = job.ts.start_in + input_dur
         evt = BBEvent(job, job.ts.finish_in, BBEventType.FinishIn)
         return evt
@@ -109,7 +138,8 @@ class BBEventGeneratorBurstBuffer(BBEventGeneratorBase):
         return evt
 
     def generateFinishOutput(self, job):
-        output_dur = job.demand.data_out / self.system.bb.to_io
+        # output_dur = job.demand.data_out / self.system.bb.to_io
+        output_dur = job.demand.data_out / self.system.cpu.to_bb
         job.ts.finish_out = job.ts.start_out + output_dur
         evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
         return evt
@@ -195,10 +225,15 @@ class BBSimulatorBase(object):
 
 
 class BBSimulatorDirect(BBSimulatorBase):
-    """only simulator cpu and IO"""
+    """only 1 phase"""
     def __init__(self, system):
         super(BBSimulatorDirect, self).__init__()
-        self.generator = BBEventGeneratorDirect(system)
+
+    def setEventGenerator(self, device, system):
+        if device == 'IO':
+            self.generator = BBEventGeneratorDirectIO(system)
+        elif device == 'BB':
+            self.generator = BBEventGeneratorDirectBB(system)
 
     def handleEvents(self, events):
         self.virtual_time = events[0].timestamp
@@ -218,11 +253,11 @@ class BBSimulatorDirect(BBSimulatorBase):
                 self.event_q.append(evt)
 
 
-class BBSimulatorBurstBuffer(BBSimulatorBase):
+class BBSimulatorCerberus(BBSimulatorBase):
     """consider burst buffer, e.g. 3 phase scheduling"""
     def __init__(self, system):
-        super(BBSimulatorBurstBuffer, self).__init__()
-        self.generator = BBEventGeneratorBurstBuffer(system)
+        super(BBSimulatorCerberus, self).__init__()
+        self.generator = BBEventGeneratorCerberus(system)
 
     def handleEvents(self, events):
         """trigger scheduler when event happens"""

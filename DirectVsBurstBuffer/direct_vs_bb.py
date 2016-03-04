@@ -71,7 +71,7 @@ if __name__ == '__main__':
     data_range = [[10, 40, 10],
                   [2000, 6000, 1000],
                   [4000, 10000, 1000]]
-    trace_reader.patchTraceFile(data_range, mod_submit=True)
+    trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
 
     cpu = BBCpu(163840, 4000, 7.5)
     bb = BBBurstBuffer(1600000, 4000, 400)
