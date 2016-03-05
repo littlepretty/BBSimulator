@@ -3,6 +3,7 @@
 from job import BBJobStatus
 from enum import Enum
 import logging
+import csv
 
 
 class BBEventType(Enum):
@@ -175,6 +176,7 @@ class BBSimulatorBase(object):
         self.scheduler = None
         self.generator = None
         self.event_q = []
+        self.cpu_usage = []
         self.virtual_time = float(0)
 
     def setScheduler(self, sched):
@@ -216,11 +218,24 @@ class BBSimulatorBase(object):
         for evt in self.event_q:
             logging.debug('\t ' + str(evt))
 
+    def gatherSystemStatistics(self, system):
+        cpu_usage = 1 - system.cpu.available / system.cpu.capacity
+        self.cpu_usage.append(cpu_usage)
+
+    def dumpSystemStatistics(self, filename):
+        writer = csv.writer(open(filename, 'w'))
+        first_row = ['cpu']
+        writer.writerow(first_row)
+        for x in self.cpu_usage:
+            row = [x]
+            writer.writerow(row)
+
     def simulateCore(self):
         """keep popping events and handle them"""
         while len(self.event_q) > 0:
             evts = self.nextEvents()
             self.handleEvents(evts)
+            self.gatherSystemStatistics(self.scheduler.system)
         self.dumpEventQueue()
 
 
@@ -258,6 +273,21 @@ class BBSimulatorCerberus(BBSimulatorBase):
     def __init__(self, system):
         super(BBSimulatorCerberus, self).__init__()
         self.generator = BBEventGeneratorCerberus(system)
+        self.bb_usage = []
+
+    def gatherSystemStatistics(self, system):
+        cpu_usage = 1 - system.cpu.available / system.cpu.capacity
+        bb_usage = 1 - system.bb.available / system.bb.capacity
+        self.cpu_usage.append(cpu_usage)
+        self.bb_usage.append(bb_usage)
+
+    def dumpSystemStatistics(self, filename):
+        writer = csv.writer(open(filename, 'w'))
+        first_row = ['cpu', 'bb']
+        writer.writerow(first_row)
+        for x, y in self.cpu_usage, self.bb_usage:
+            row = [x, y]
+            writer.writerow(row)
 
     def handleEvents(self, events):
         """trigger scheduler when event happens"""
