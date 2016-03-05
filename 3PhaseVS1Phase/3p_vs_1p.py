@@ -62,33 +62,37 @@ def onePhaseBurstBuffer(data):
 def utilizationPlot(prefix, column='cpu'):
     data0 = np.genfromtxt(file_prefix + '_1pio.usg.csv', delimiter=',',
                           skip_header=1,
-                          names=['cpu'])
+                          names=['time', 'cpu'])
     data1 = np.genfromtxt(file_prefix + '_1pbb.usg.csv', delimiter=',',
                           skip_header=1,
-                          names=['cpu'])
+                          names=['time', 'cpu', 'bb'])
     data2 = np.genfromtxt(prefix + '_3p_same.usg.csv', delimiter=',',
-                          skip_header=1, names=['cpu', 'bb'])
+                          skip_header=1, names=['time', 'cpu', 'bb'])
     data3 = np.genfromtxt(prefix + '_3p_diff.usg.csv', delimiter=',',
-                          skip_header=1, names=['cpu', 'bb'])
+                          skip_header=1, names=['time', 'cpu', 'bb'])
+    x0 = data0['time']
+    x1 = data1['time']
+    x2 = data2['time']
+    x3 = data3['time']
+
     y0 = data0[column]
     y1 = data1[column]
     y2 = data2[column]
     y3 = data3[column]
 
     plt.figure(0)
-    plt.plot(range(0, len(y0)), y0, label='1 phase IO', linewidth=3,
+    plt.plot(x0, y0, label='1 phase IO', linewidth=3,
              color='blue', linestyle='--')
-    plt.plot(range(0, len(y1)), y1, label='1 phase BB', linewidth=3,
+    plt.plot(x1, y1, label='1 phase BB', linewidth=3,
              color='red', linestyle='--')
-    plt.plot(range(0, len(y2)), y2, label='3 phase D', linewidth=3,
+    plt.plot(x2, y2, label='3 phase D', linewidth=3,
              color='green', linestyle='--')
-    plt.plot(range(0, len(y3)), y3, label='3 phase IRO', linewidth=3,
+    plt.plot(x3, y3, label='3 phase IRO', linewidth=3,
              color='black', linestyle='--')
 
     plt.legend(loc='lower right')
-    # plt.xlim([0, 100000])
     plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps')
-    plt.show()
+    # plt.show()
 
 
 def cdfPlot(prefix, column='response'):
@@ -128,7 +132,7 @@ def cdfPlot(prefix, column='response'):
     yvals2 = np.arange(len(sorted_time2))/float(len(sorted_time2))
     yvals3 = np.arange(len(sorted_time3))/float(len(sorted_time3))
 
-    plt.figure(0)
+    plt.figure(1)
     plt.plot(sorted_time0, yvals0*100, label='1 phase IO', linewidth=3,
              color='blue', linestyle='--')
     plt.plot(sorted_time1, yvals1*100, label='1 phase BB', linewidth=3,
@@ -139,9 +143,8 @@ def cdfPlot(prefix, column='response'):
              color='black', linestyle='--')
 
     plt.legend(loc='lower right')
-    # plt.xlim([0, 100000])
     plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps')
-    plt.show()
+    # plt.show()
 
 
 if __name__ == '__main__':
@@ -150,7 +153,8 @@ if __name__ == '__main__':
     file_prefix = '1000jobs'
 
     trace_reader = BBTraceReader(file_prefix + '.swf', lam=10)
-    cpu = BBCpu(163840, 4000, 7.5)
+    # cpu = BBCpu(163840, 4000, 7.5)
+    cpu = BBCpu(100000, 4000, 7.5)
     bb = BBBurstBuffer(400000, 4000, 40)
     io = BBIo(7.5, 40)
     system = BBSystemBurstBuffer(cpu, bb, io)
@@ -163,5 +167,5 @@ if __name__ == '__main__':
     onePhaseIO(random_data)
     onePhaseBurstBuffer(random_data)
 
-    # cdfPlot(file_prefix, 'wait')
+    cdfPlot(file_prefix, 'response')
     utilizationPlot(file_prefix)
