@@ -178,6 +178,7 @@ class BBSimulatorBase(object):
         self.event_q = []
         self.cpu_usage = []
         self.virtual_time = float(0)
+        self.time_series = []
 
     def setScheduler(self, sched):
         """change scheduler"""
@@ -219,6 +220,8 @@ class BBSimulatorBase(object):
             logging.debug('\t ' + str(evt))
 
     def gatherSystemStatistics(self, system):
+        self.time_series.append(self.virtual_time)
+
         cpu_usage = 1 - system.cpu.available / system.cpu.capacity
         self.cpu_usage.append(cpu_usage)
 
@@ -226,8 +229,8 @@ class BBSimulatorBase(object):
         writer = csv.writer(open(filename, 'w'))
         first_row = ['cpu']
         writer.writerow(first_row)
-        for x in self.cpu_usage:
-            row = [x]
+        for t, x in zip(self.time_series, self.cpu_usage):
+            row = [t, x]
             writer.writerow(row)
 
     def simulateCore(self):
@@ -243,12 +246,32 @@ class BBSimulatorDirect(BBSimulatorBase):
     """only 1 phase"""
     def __init__(self, system):
         super(BBSimulatorDirect, self).__init__()
+        self.has_bb = False
 
     def setEventGenerator(self, device, system):
         if device == 'IO':
             self.generator = BBEventGeneratorDirectIO(system)
         elif device == 'BB':
             self.generator = BBEventGeneratorDirectBB(system)
+            self.has_bb = True
+
+    def gatherSystemStatistics(self, system):
+        self.time_series.append(self.virtual_time)
+
+        cpu_usage = 1 - system.cpu.available / system.cpu.capacity
+        self.cpu_usage.append(cpu_usage)
+
+        if self.has_bb:
+            bb_usage = 1 - system.bb.available / system.bb.capacity
+            self.bb_usage.append(bb_usage)
+
+    def dumpSystemStatistics(self, filename):
+        writer = csv.writer(open(filename, 'w'))
+        first_row = ['cpu', 'bb']
+        writer.writerow(first_row)
+        for t, x, y in zip(self.time_series, self.cpu_usage, self.bb_usage):
+            row = [t, x, y]
+            writer.writerow(row)
 
     def handleEvents(self, events):
         self.virtual_time = events[0].timestamp
@@ -276,17 +299,20 @@ class BBSimulatorCerberus(BBSimulatorBase):
         self.bb_usage = []
 
     def gatherSystemStatistics(self, system):
+        self.time_series.append(self.virtual_time)
+
         cpu_usage = 1 - system.cpu.available / system.cpu.capacity
-        bb_usage = 1 - system.bb.available / system.bb.capacity
         self.cpu_usage.append(cpu_usage)
+
+        bb_usage = 1 - system.bb.available / system.bb.capacity
         self.bb_usage.append(bb_usage)
 
     def dumpSystemStatistics(self, filename):
         writer = csv.writer(open(filename, 'w'))
         first_row = ['cpu', 'bb']
         writer.writerow(first_row)
-        for x, y in zip(self.cpu_usage, self.bb_usage):
-            row = [x, y]
+        for t, x, y in zip(self.time_series, self.cpu_usage, self.bb_usage):
+            row = [t, x, y]
             writer.writerow(row)
 
     def handleEvents(self, events):
