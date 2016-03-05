@@ -285,7 +285,7 @@ class BBSimulatorCerberus(BBSimulatorBase):
         writer = csv.writer(open(filename, 'w'))
         first_row = ['cpu', 'bb']
         writer.writerow(first_row)
-        for x, y in self.cpu_usage, self.bb_usage:
+        for x, y in zip(self.cpu_usage, self.bb_usage):
             row = [x, y]
             writer.writerow(row)
 

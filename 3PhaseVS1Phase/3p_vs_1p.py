@@ -20,6 +20,7 @@ def threePhaseDifferentData(data_range):
     jobs = trace_reader.generateJobs()
     bb_simulator.simulate(jobs)
     bb_scheduler.outputJobSummary(file_prefix + '_3p_diff.out.csv')
+    bb_simulator.dumpSystemStatistics(file_prefix + '_3p_diff.usg.csv')
     return data
 
 
@@ -31,6 +32,7 @@ def threePhaseSameData(data):
     jobs = trace_reader.generateJobs()
     bb_simulator.simulate(jobs)
     bb_scheduler.outputJobSummary(file_prefix + '_3p_same.out.csv')
+    bb_simulator.dumpSystemStatistics(file_prefix + '_3p_same.usg.csv')
 
 
 def onePhaseIO(data):
@@ -42,6 +44,7 @@ def onePhaseIO(data):
     jobs = trace_reader.generateJobs()
     simulator.simulate(jobs)
     scheduler.outputJobSummary(file_prefix + '_1pio.out.csv')
+    simulator.dumpSystemStatistics(file_prefix + '_1pio.usg.csv')
 
 
 def onePhaseBurstBuffer(data):
@@ -53,6 +56,39 @@ def onePhaseBurstBuffer(data):
     jobs = trace_reader.generateJobs()
     bb_simulator.simulate(jobs)
     bb_scheduler.outputJobSummary(file_prefix + '_1pbb.out.csv')
+    bb_simulator.dumpSystemStatistics(file_prefix + '_1pbb.usg.csv')
+
+
+def utilizationPlot(prefix, column='cpu'):
+    data0 = np.genfromtxt(file_prefix + '_1pio.usg.csv', delimiter=',',
+                          skip_header=1,
+                          names=['cpu'])
+    data1 = np.genfromtxt(file_prefix + '_1pbb.usg.csv', delimiter=',',
+                          skip_header=1,
+                          names=['cpu'])
+    data2 = np.genfromtxt(prefix + '_3p_same.usg.csv', delimiter=',',
+                          skip_header=1, names=['cpu', 'bb'])
+    data3 = np.genfromtxt(prefix + '_3p_diff.usg.csv', delimiter=',',
+                          skip_header=1, names=['cpu', 'bb'])
+    y0 = data0[column]
+    y1 = data1[column]
+    y2 = data2[column]
+    y3 = data3[column]
+
+    plt.figure(0)
+    plt.plot(range(0, len(y0)), y0, label='1 phase IO', linewidth=3,
+             color='blue', linestyle='--')
+    plt.plot(range(0, len(y1)), y1, label='1 phase BB', linewidth=3,
+             color='red', linestyle='--')
+    plt.plot(range(0, len(y2)), y2, label='3 phase D', linewidth=3,
+             color='green', linestyle='--')
+    plt.plot(range(0, len(y3)), y3, label='3 phase IRO', linewidth=3,
+             color='black', linestyle='--')
+
+    plt.legend(loc='lower right')
+    # plt.xlim([0, 100000])
+    plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps')
+    plt.show()
 
 
 def cdfPlot(prefix, column='response'):
@@ -104,7 +140,7 @@ def cdfPlot(prefix, column='response'):
 
     plt.legend(loc='lower right')
     # plt.xlim([0, 100000])
-    plt.savefig(prefix + '_direct_vs_bb.eps', format='eps')
+    plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps')
     plt.show()
 
 
@@ -126,5 +162,6 @@ if __name__ == '__main__':
     threePhaseSameData(random_data)
     onePhaseIO(random_data)
     onePhaseBurstBuffer(random_data)
-    # cdfPlot(file_prefix)
-    cdfPlot(file_prefix, 'wait')
+
+    # cdfPlot(file_prefix, 'wait')
+    utilizationPlot(file_prefix)
