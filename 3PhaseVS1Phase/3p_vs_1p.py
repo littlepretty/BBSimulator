@@ -100,7 +100,7 @@ def utilizationPlot(prefix, column='cpu'):
     # plt.show()
 
 
-def cdfPlot(prefix, column='response'):
+def timePlot(prefix, column='response'):
     global figure_no
     first_row = ['jid', 'submit', 'wait_in',
                  'iput', 'wait_run', 'run',
@@ -121,8 +121,12 @@ def cdfPlot(prefix, column='response'):
     data3 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
                           skip_header=1, names=first_row)
 
-    time0 = data0[column]
-    time1 = data1[column]
+    if column in ['wait_in', 'wait_out', 'wait_run']:
+        time0 = data0['wait']
+        time1 = data1['wait']
+    else:
+        time0 = data0[column]
+        time1 = data1[column]
     time2 = data2[column]
     time3 = data3[column]
     time2 = [x for x in time2 if x > 10.0]
@@ -154,6 +158,46 @@ def cdfPlot(prefix, column='response'):
     # plt.show()
 
 
+def jobPlot(prefix):
+    global figure_no
+    data = np.loadtxt(prefix + '.swf.bb', comments=';')
+
+    num_bins = 1000
+    counts, rt_bin_edges = np.histogram(data[:, 3], bins=num_bins)
+    rt_hist = np.cumsum(counts)
+    counts, num_core_bin_edges = np.histogram(data[:, 7], bins=num_bins)
+    num_core_hist = np.cumsum(counts)
+
+    plt.figure(figure_no)
+    figure_no += 1
+    fig, ax1 = plt.subplots()
+    x = range(0, len(data[:, 3]))
+    ax1.plot(x, data[:, 3], label='Running Time', linewidth=3,
+             color='red', linestyle='--')
+    ax1.set_ylabel('Running Time', color='r')
+    for tl in ax1.get_yticklabels():
+        tl.set_color('r')
+
+    ax2 = ax1.twinx()
+    ax2.plot(x, data[:, 7], label='Num Cores', linewidth=3,
+             color='green', linestyle='--')
+    ax2.set_ylabel('Num Cores', color='g')
+    for tl in ax2.get_yticklabels():
+        tl.set_color('g')
+    plt.savefig(prefix + '_series.eps', format='eps')
+    plt.close()
+
+    plt.figure(figure_no)
+    figure_no += 1
+    plt.plot(rt_bin_edges[1:], rt_hist, label='Running Time', linewidth=3,
+             color='red', linestyle='--')
+    plt.plot(num_core_bin_edges[1:], num_core_hist,
+             label='Num Cores', linewidth=3,
+             color='green', linestyle='--')
+    plt.legend(loc='lower right')
+    plt.savefig(prefix + '_hist.eps', format='eps')
+
+
 if __name__ == '__main__':
     figure_no = 0
     # logging.basicConfig(level=logging.DEBUG)
@@ -162,7 +206,7 @@ if __name__ == '__main__':
 
     trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
     # cpu = BBCpu(163840, 4000, 7.5)
-    cpu = BBCpu(160000, 6, 0.9)
+    cpu = BBCpu(300000, 6, 0.9)
     bb = BBBurstBuffer(400000, 6, 1)
     io = BBIo(0.9, 1)
     system = BBSystemBurstBuffer(cpu, bb, io)
@@ -175,7 +219,8 @@ if __name__ == '__main__':
     onePhaseIO(random_data)
     onePhaseBurstBuffer(random_data)
 
-    cdfPlot(file_prefix, 'response')
-    cdfPlot(file_prefix, 'wait')
+    timePlot(file_prefix, 'response')
+    timePlot(file_prefix, 'wait_run')
     utilizationPlot(file_prefix, 'cpu')
     utilizationPlot(file_prefix, 'bb')
+    jobPlot(file_prefix)
