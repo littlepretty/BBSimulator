@@ -206,9 +206,9 @@ if __name__ == '__main__':
 
     trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
     # cpu = BBCpu(163840, 4000, 7.5)
-    cpu = BBCpu(300000, 6, 0.9)
+    cpu = BBCpu(300000, 6, 0.8)
     bb = BBBurstBuffer(400000, 6, 1)
-    io = BBIo(0.9, 1)
+    io = BBIo(0.8, 1)
     system = BBSystemBurstBuffer(cpu, bb, io)
     data_range3 = [[1000, 10000, 100],
                    [1000, 10000, 100],
