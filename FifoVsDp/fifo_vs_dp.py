@@ -162,7 +162,7 @@ def cdfPlot(prefix, column='wait'):
     plt.plot(sorted_time3, yvals3*100, 'g:', label='Max #Tasks', linewidth=3)
     plt.plot(sorted_time4, yvals4*100, 'y-', label='Direct IO', linewidth=3)
     plt.plot(sorted_time5, yvals5*100, 'm-.', label='Direct BB', linewidth=3)
-    plt.plot(sorted_time6, yvals6*100, 'c:', label='BB D', linewidth=3)
+    plt.plot(sorted_time6, yvals6*100, 'c:', label='Plain/BB D', linewidth=3)
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_fifo_vs_dp_%s.eps' % column, fmt='eps')
 
