@@ -11,11 +11,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def runDirectIOScheduler():
+def runDirectIOScheduler(data):
     simulator = BBSimulatorDirect(system)
     scheduler = BBSchedulerDirectIO(system)
     simulator.setScheduler(scheduler)
     simulator.setEventGenerator('IO', system)
+    trace_reader.patchTraceFileOnePhase(data, mod_submit=True)
     jobs = trace_reader.generateJobs()
     simulator.simulate(jobs)
     scheduler.outputJobSummary(file_prefix + '_direct.out.csv')
@@ -25,9 +26,12 @@ def runPlainBBScheduler():
     bb_simulator = BBSimulatorCerberus(system)
     bb_scheduler = BBSchedulerCerberus(system)
     bb_simulator.setScheduler(bb_scheduler)
+    data = trace_reader.patchTraceFileThreePhases(data_range,
+                                                  mod_submit=True)
     bb_jobs = trace_reader.generateJobs()
     bb_simulator.simulate(bb_jobs)
     bb_scheduler.outputJobSummary(file_prefix + '_plain.out.csv')
+    return data
 
 
 def cdfPlot(prefix, column='response'):
@@ -57,23 +61,23 @@ def cdfPlot(prefix, column='response'):
              color='red', linestyle='--')
     plt.legend(loc='lower right')
     # plt.xlim([0, 100000])
-    plt.savefig(prefix + '_direct_vs_bb.eps', format='eps')
+    plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps')
 
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
-    file_prefix = '100jobs'
+    file_prefix = '1000jobs'
     trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    data_range = [[1000, 10000, 100],
-                  [1000, 10000, 100],
-                  [1000, 10000, 100]]
-    trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
+    data_range = [[1000, 60000, 1000],
+                  [1000, 60000, 1000],
+                  [1000, 60000, 1000]]
 
-    cpu = BBCpu(300000, 6, 0.8)
-    bb = BBBurstBuffer(400000, 6, 1)
-    io = BBIo(0.8, 1)
+    cpu = BBCpu(300000, 8, 2.5)
+    bb = BBBurstBuffer(4000000, 8, 1)
+    io = BBIo(2.5, 1)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
-    runDirectIOScheduler()
-    runPlainBBScheduler()
+    data = runPlainBBScheduler()
+    runDirectIOScheduler(data)
+
     cdfPlot(file_prefix)

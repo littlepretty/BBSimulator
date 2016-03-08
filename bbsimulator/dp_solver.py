@@ -2,6 +2,9 @@
 
 import logging
 
+BB_unit = 1000
+CPU_unit = 1
+
 
 class DPSolver(object):
     """dynamic programming solver for scheduling"""
@@ -58,13 +61,13 @@ class DPSolver(object):
 
     def maxStageInBurstBuffer(self, BB, all_jobs):
         self.jobs = all_jobs
-        demand = [job.demand.data_in for job in self.jobs]
-        return self.maxBurstBuffer(BB, demand)
+        demand = [job.demand.data_in / BB_unit for job in self.jobs]
+        return self.maxBurstBuffer(BB / BB_unit, demand)
 
     def maxStageOutBurstBuffer(self, BB, all_jobs):
         self.jobs = all_jobs
-        demand = [job.demand.data_out for job in self.jobs]
-        return self.maxBurstBuffer(BB, demand)
+        demand = [job.demand.data_out / BB_unit for job in self.jobs]
+        return self.maxBurstBuffer(BB / BB_unit, demand)
 
     def maxNumberTasks(self, BB, demand):
         N = len(demand)
@@ -115,22 +118,22 @@ class DPSolver(object):
     def maxStageInParallelJobs(self, BB, all_jobs):
         """maximize number of runnable tasks"""
         self.jobs = all_jobs
-        demand = [job.demand.data_in for job in self.jobs]
-        return self.maxNumberTasks(BB, demand)
+        demand = [job.demand.data_in / BB_unit for job in self.jobs]
+        return self.maxNumberTasks(BB / BB_unit, demand)
 
     def maxStageOutParallelJobs(self, BB, all_jobs):
         """maximize number of runnable tasks"""
         self.jobs = all_jobs
-        demand = [job.demand.data_out for job in self.jobs]
-        return self.maxNumberTasks(BB, demand)
+        demand = [job.demand.data_out / BB_unit for job in self.jobs]
+        return self.maxNumberTasks(BB / BB_unit, demand)
 
     def maxRunningCpuBb(self, CPU, BB, all_jobs):
         """maximize utilization of (cpu, burst buffer) pair"""
         self.jobs = all_jobs
-        cpu_demand = [job.demand.num_core for job in self.jobs]
-        bb_demand = [job.demand.data_run for job in self.jobs]
-        N = len(cpu_demand)
-        CPU = int(CPU)
+        cpu_demand = [job.demand.num_core / CPU_unit for job in self.jobs]
+        bb_demand = [job.demand.data_run / BB_unit for job in self.jobs]
+        N = len(cpu_demand) / BB_unit
+        CPU = int(CPU) / CPU_unit
         # memo[i][c][w] is the optimal solution for jobs[0...i-1] with
         # c cpus and w GB of burst buffer
         memo = {}

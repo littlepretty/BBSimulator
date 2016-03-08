@@ -16,7 +16,8 @@ def threePhaseDifferentData(data_range):
     bb_simulator = BBSimulatorCerberus(system)
     bb_scheduler = BBSchedulerCerberus(system)
     bb_simulator.setScheduler(bb_scheduler)
-    data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
+    data = trace_reader.patchTraceFileThreePhases(data_range,
+                                                  mod_submit=True)
     jobs = trace_reader.generateJobs()
     bb_simulator.simulate(jobs)
     bb_scheduler.outputJobSummary(file_prefix + '_3p_diff.out.csv')
@@ -206,13 +207,13 @@ if __name__ == '__main__':
 
     trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
     # cpu = BBCpu(163840, 4000, 7.5)
-    cpu = BBCpu(300000, 6, 0.8)
-    bb = BBBurstBuffer(400000, 6, 1)
-    io = BBIo(0.8, 1)
+    cpu = BBCpu(300000, 8, 2.5)
+    bb = BBBurstBuffer(4000000, 8, 1)
+    io = BBIo(2.5, 1)
     system = BBSystemBurstBuffer(cpu, bb, io)
-    data_range3 = [[1000, 10000, 100],
-                   [1000, 10000, 100],
-                   [1000, 10000, 100]]
+    data_range3 = [[1000, 60000, 1000],
+                   [1000, 60000, 1000],
+                   [1000, 60000, 1000]]
 
     random_data = threePhaseDifferentData(data_range3)
     threePhaseSameData(random_data)
