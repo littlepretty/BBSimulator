@@ -10,6 +10,7 @@ from bbsimulator.trace_reader import BBTraceReader
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+from bisect import bisect_left, bisect_right
 
 
 def threePhaseDifferentData(data_range):
@@ -103,24 +104,16 @@ def utilizationPlot(prefix, column='cpu'):
 
 def timePlot(prefix, column='response'):
     global figure_no
-    first_row = ['jid', 'submit', 'wait_in',
-                 'iput', 'wait_run', 'run',
-                 'wait_out', 'oput',
-                 'complete', 'wait', 'response']
     data0 = np.genfromtxt(file_prefix + '_1pio.out.csv', delimiter=',',
                           skip_header=1,
-                          names=['jid', 'submit', 'iput',
-                                 'run', 'oput', 'complete',
-                                 'wait', 'response'])
+                          names=first_row1)
     data1 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
                           skip_header=1,
-                          names=['jid', 'submit', 'iput',
-                                 'run', 'oput', 'complete',
-                                 'wait', 'response'])
+                          names=first_row1)
     data2 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
-                          skip_header=1, names=first_row)
+                          skip_header=1, names=first_row3)
     data3 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
-                          skip_header=1, names=first_row)
+                          skip_header=1, names=first_row3)
 
     if column in ['wait_in', 'wait_out', 'wait_run']:
         time0 = data0['wait']
@@ -199,14 +192,60 @@ def jobPlot(prefix):
     plt.savefig(prefix + '_hist.eps', format='eps')
 
 
+def calculateThroughput(finish, interval, delta=1000.0):
+    throughputs = []
+    i = 0
+    for i in range(1, len(interval)):
+        low = bisect_left(finish, interval[i-1])
+        high = bisect_right(finish, interval[i])
+        if finish[low] != interval[i-1] and high < len(finish) \
+                and finish[high] != interval[i]:
+            throughputs.append(high - low)
+        else:
+            throughputs.append(high - low + 1)
+    return throughputs
+
+
+def throughputPlot(prefix, delta=500.0):
+    global figure_no
+    data1 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
+                          skip_header=1, names=first_row3)
+    data4 = np.genfromtxt(file_prefix + '_1pio.out.csv', delimiter=',',
+                          skip_header=1, names=first_row1)
+    data5 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
+                          skip_header=1, names=first_row1)
+    data6 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
+                          skip_header=1, names=first_row3)
+    lines = ['b--', 'r-.', 'g:', 'c-.', 'm-.', 'y:']
+    labels = ['Direct IO', 'Direct BB', 'Plain BB 1D', 'Plain BB 3P']
+    i = 0
+    plt.figure(figure_no)
+    for data in [data4, data5, data6, data1]:
+        finish = data['complete']
+        finish = np.sort(finish)
+        latest_finish = finish.max()
+        intervals = range(0, int(latest_finish + delta), int(delta))
+        throughputs = calculateThroughput(finish, intervals, delta)
+        plt.plot(intervals[1:], throughputs, lines[i],
+                 label=labels[i], linewidth=3)
+        i += 1
+    plt.legend(loc='upper right')
+    plt.savefig(prefix + '_throughput.eps', fmt='eps')
+
+
 if __name__ == '__main__':
     figure_no = 0
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
     file_prefix = '1000jobs'
-
+    first_row3 = ['jid', 'submit', 'wait_in',
+                  'iput', 'wait_run', 'run',
+                  'wait_out', 'oput',
+                  'complete', 'wait', 'response']
+    first_row1 = ['jid', 'submit', 'iput',
+                  'run', 'oput', 'complete',
+                  'wait', 'response']
     trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    # cpu = BBCpu(163840, 4000, 7.5)
     cpu = BBCpu(300000, 8, 2.5)
     bb = BBBurstBuffer(4000000, 8, 1)
     io = BBIo(2.5, 1)
@@ -214,7 +253,6 @@ if __name__ == '__main__':
     data_range3 = [[1000, 60000, 1000],
                    [1000, 60000, 1000],
                    [1000, 60000, 1000]]
-
     random_data = threePhaseDifferentData(data_range3)
     threePhaseSameData(random_data)
     onePhaseIO(random_data)
@@ -222,6 +260,7 @@ if __name__ == '__main__':
 
     timePlot(file_prefix, 'response')
     timePlot(file_prefix, 'wait_run')
-    utilizationPlot(file_prefix, 'cpu')
-    utilizationPlot(file_prefix, 'bb')
+    # utilizationPlot(file_prefix, 'cpu')
+    # utilizationPlot(file_prefix, 'bb')
     jobPlot(file_prefix)
+    throughputPlot(file_prefix)
