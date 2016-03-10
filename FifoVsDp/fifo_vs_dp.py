@@ -209,19 +209,19 @@ if __name__ == '__main__':
     data_range = [[1000, 10000, 1000],
                   [1000, 10000, 1000],
                   [1000, 10000, 1000]]
-    # data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
+    data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
 
     cpu = BBCpu(300000, 8, 2.5)
     bb = BBBurstBuffer(4000000, 8, 1)
     io = BBIo(2.5, 1)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
-    # runPlainBBScheduler()
-    # runMaxParallelScheduler()
-    # runMaxBBScheduler()
-    # threePhaseSameData(data)
-    # onePhaseIO(data)
-    # onePhaseBurstBuffer(data)
-    # cdfPlot(file_prefix, 'response')
-    # cmpDP(file_prefix, 'response')
+    runPlainBBScheduler()
+    runMaxParallelScheduler()
+    runMaxBBScheduler()
+    threePhaseSameData(data)
+    onePhaseIO(data)
+    onePhaseBurstBuffer(data)
+    cdfPlot(file_prefix, 'response')
+    cmpDP(file_prefix, 'response')
     throughputPlot(file_prefix)

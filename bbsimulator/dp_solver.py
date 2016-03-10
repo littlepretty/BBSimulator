@@ -127,13 +127,9 @@ class DPSolver(object):
         demand = [job.demand.data_out / BB_unit for job in self.jobs]
         return self.maxNumberTasks(BB / BB_unit, demand)
 
-    def maxRunningCpuBb(self, CPU, BB, all_jobs):
+    def maxRunningCpuBBProduct(self, CPU, BB, cpu_demand, bb_demand):
         """maximize utilization of (cpu, burst buffer) pair"""
-        self.jobs = all_jobs
-        cpu_demand = [job.demand.num_core / CPU_unit for job in self.jobs]
-        bb_demand = [job.demand.data_run / BB_unit for job in self.jobs]
-        N = len(cpu_demand) / BB_unit
-        CPU = int(CPU) / CPU_unit
+        N = len(cpu_demand)
         # memo[i][c][w] is the optimal solution for jobs[0...i-1] with
         # c cpus and w GB of burst buffer
         memo = {}
@@ -185,3 +181,12 @@ class DPSolver(object):
             logging.debug('\t ' + str(job))
         logging.debug('\t Maximum value is %.2f' % memo[N][CPU][BB])
         return jobs
+
+    def maxRunningCpuBb(self, CPU, BB, all_jobs):
+        self.jobs = all_jobs
+        cpu_demand = [job.demand.num_core / CPU_unit for job in self.jobs]
+        bb_demand = [job.demand.data_run / BB_unit for job in self.jobs]
+        return self.maxRunningCpuBBProduct(int(CPU / CPU_unit),
+                                           BB / BB_unit,
+                                           cpu_demand,
+                                           bb_demand)
