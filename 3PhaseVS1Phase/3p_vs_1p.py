@@ -103,9 +103,6 @@ def utilizationPlot(prefix, column='cpu'):
 
 def timePlot(prefix, column='response'):
     global figure_no
-    data0 = np.genfromtxt(file_prefix + '_1pio.out.csv', delimiter=',',
-                          skip_header=1,
-                          names=first_row1)
     data1 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
                           skip_header=1,
                           names=first_row1)
@@ -115,30 +112,24 @@ def timePlot(prefix, column='response'):
                           skip_header=1, names=first_row3)
 
     if column in ['wait_in', 'wait_out', 'wait_run']:
-        time0 = data0['wait']
         time1 = data1['wait']
     else:
-        time0 = data0[column]
         time1 = data1[column]
     time2 = data2[column]
     time3 = data3[column]
     time2 = [x for x in time2 if x > 10.0]
     time3 = [x for x in time3 if x > 10.0]
 
-    sorted_time0 = np.sort(time0)
     sorted_time1 = np.sort(time1)
     sorted_time2 = np.sort(time2)
     sorted_time3 = np.sort(time3)
 
-    yvals0 = np.arange(len(sorted_time0))/float(len(sorted_time0))
     yvals1 = np.arange(len(sorted_time1))/float(len(sorted_time1))
     yvals2 = np.arange(len(sorted_time2))/float(len(sorted_time2))
     yvals3 = np.arange(len(sorted_time3))/float(len(sorted_time3))
 
     plt.figure(figure_no)
     figure_no += 1
-    # plt.plot(sorted_time0, yvals0*100, label='1 phase IO', linewidth=3,
-             # color='blue', linestyle='--')
     plt.plot(sorted_time1, yvals1*100, label='1 phase BB', linewidth=3,
              color='red', linestyle='--')
     plt.plot(sorted_time2, yvals2*100, label='3 phase D', linewidth=3,
@@ -191,7 +182,7 @@ def jobPlot(prefix):
     plt.savefig(prefix + '_hist.eps', format='eps')
 
 
-def calculateThroughput(finish, interval, delta=1000.0):
+def calculateThroughput(finish, interval):
     throughputs = []
     i = 0
     for i in range(1, len(interval)):
@@ -209,27 +200,25 @@ def throughputPlot(prefix, delta=500.0):
     global figure_no
     data1 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    data4 = np.genfromtxt(file_prefix + '_1pio.out.csv', delimiter=',',
-                          skip_header=1, names=first_row1)
     data5 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
     data6 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    lines = ['b--', 'r-.', 'g:', 'c-.', 'm-.', 'y:']
-    labels = ['Direct IO', 'Direct BB', 'Plain BB 1D', 'Plain BB 3P']
+    lines = ['b:', 'r:', 'g:', 'c-.', 'm-.', 'y:']
+    labels = ['Direct BB', 'Plain BB 1D', 'Plain BB 3P']
     i = 0
     plt.figure(figure_no)
-    for data in [data4, data5, data6, data1]:
+    for data in [data5, data6, data1]:
         finish = data['complete']
         finish = np.sort(finish)
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
-        throughputs = calculateThroughput(finish, intervals, delta)
+        throughputs = calculateThroughput(finish, intervals)
         plt.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
     plt.legend(loc='upper right')
-    plt.savefig(prefix + '_throughput.eps', fmt='eps')
+    plt.savefig(prefix + '3p_vs_1p_throughput.eps', fmt='eps')
 
 
 if __name__ == '__main__':
@@ -244,18 +233,22 @@ if __name__ == '__main__':
     first_row1 = ['jid', 'submit', 'iput',
                   'run', 'oput', 'complete',
                   'wait', 'response']
-    # trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    # cpu = BBCpu(300000, 8, 2.5)
-    # bb = BBBurstBuffer(4000000, 8, 1)
-    # io = BBIo(2.5, 1)
-    # system = BBSystemBurstBuffer(cpu, bb, io)
-    # data_range3 = [[1000, 60000, 1000],
-                   # [1000, 60000, 1000],
-                   # [1000, 60000, 1000]]
+    trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
+    cpu = BBCpu(300000, 8, 2.5)
+    bb = BBBurstBuffer(4000000, 8, 1)
+    io = BBIo(2.5, 1)
+    system = BBSystemBurstBuffer(cpu, bb, io)
+    data_range3 = [[1000, 60000, 1000],
+                   [1000, 60000, 1000],
+                   [1000, 60000, 1000]]
     # random_data = threePhaseDifferentData(data_range3)
+    # logging.info(str(system))
     # threePhaseSameData(random_data)
+    # logging.info(str(system))
     # onePhaseIO(random_data)
+    # logging.info(str(system))
     # onePhaseBurstBuffer(random_data)
+    # logging.info(str(system))
 
     timePlot(file_prefix, 'response')
     timePlot(file_prefix, 'wait_run')
