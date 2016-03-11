@@ -194,7 +194,7 @@ def cdfPlot(prefix, column='wait'):
     # plt.plot(sorted_time6, yvals6*100, 'c:', label='Plain/BB D', linewidth=3)
     # plt.xlim([0, 100000])
     plt.legend(loc='lower right')
-    plt.savefig(prefix + '_fifo_vs_dp_%s.eps' % column, fmt='eps')
+    plt.savefig(prefix + '_dp_vs_fifo_%s.eps' % column, fmt='eps')
 
 
 if __name__ == '__main__':
