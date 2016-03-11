@@ -79,7 +79,7 @@ def runMaxParallelScheduler():
     bb_simulator.dumpSystemStatistics(file_prefix + '_maxparallel.usg.csv')
 
 
-def calculateThroughput(finish, interval, delta=1000.0):
+def calculateThroughput(finish, interval):
     throughputs = []
     i = 0
     for i in range(1, len(interval)):
@@ -97,25 +97,26 @@ def throughputPlot(prefix, delta=500.0):
     global figure_no
     data1 = np.genfromtxt(prefix + '_plain.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    data4 = np.genfromtxt(file_prefix + '_1pio.out.csv', delimiter=',',
+    data4 = np.genfromtxt(file_prefix + '_maxbb.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
-    data5 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
+    data5 = np.genfromtxt(file_prefix + '_maxparallel.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
-    lines = ['b--', 'r-.', 'g:', 'c--', 'm-.', 'y:']
-    labels = ['Plain BB 3P', 'Direct IO', 'Direct BB', 'Plain BB 1D']
+    lines = ['b-.', 'r-.', 'g:', 'c--', 'm-.', 'y:']
+    labels = ['Plain BB', 'Max BB', 'Max #Tasks', 'Plain BB 1D']
     i = 0
     plt.figure(figure_no)
+    figure_no += 1
     for data in [data1, data4, data5]:
         finish = data['complete']
         finish = np.sort(finish)
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
-        throughputs = calculateThroughput(finish, intervals, delta)
+        throughputs = calculateThroughput(finish, intervals)
         plt.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
     plt.legend(loc='upper right')
-    plt.savefig(prefix + '_throughput.eps', fmt='eps')
+    plt.savefig(prefix + '_dp_vs_fifo_throughput.eps', fmt='eps')
 
 
 def cmpDP(prefix, column='response'):
@@ -135,6 +136,7 @@ def cmpDP(prefix, column='response'):
     yvals3 = np.arange(len(sorted_time3))/float(len(sorted_time3))
 
     plt.figure(figure_no)
+    figure_no += 1
     plt.plot(sorted_time2, yvals2*100, 'r-.', label='maxbb', linewidth=3)
     plt.plot(sorted_time3, yvals3*100, 'g:', label='maxpar', linewidth=3)
     plt.legend(loc='lower right')
@@ -196,7 +198,7 @@ def cdfPlot(prefix, column='wait'):
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
-    file_prefix = '1000jobs'
+    file_prefix = '200jobs'
     first_row3 = ['jid', 'submit', 'wait_in',
                   'iput', 'wait_run', 'run',
                   'wait_out', 'oput',

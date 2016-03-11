@@ -225,7 +225,7 @@ def throughputPlot(prefix, delta=500.0):
         finish = np.sort(finish)
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
-        throughputs = calculateThroughput(finish, intervals, delta)
+        throughputs = calculateThroughput(finish, intervals)
         plt.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
