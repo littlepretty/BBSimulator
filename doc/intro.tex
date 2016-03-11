@@ -1,13 +1,22 @@
 \section{Introduction}
-% no \IEEEPARstart
-This demo file is intended to serve as a ``starter file''
-for IEEE Computer Society conference papers produced under \LaTeX\ using
-IEEEtran.cls version 1.8b and later.
-% You must have at least 2 lines in the paragraph with the drop letter
-% (should never be an issue)
-I wish you the best of success.
 
-\hfill mds
- 
-\hfill August 26, 2015
+Challenges due to huge amount of scientific data used by applications.
+Data requirements for applications at ALCF BG/P.
+
+Storage gap between memory and disk.
+
+Current architecture: IO forwarding nodes/IO gateways with PFSs sit between compute nodes and SAN (storage nodes + disk array)
+
+Burst buffer nodes fills the gap by utilizing various types of memory, for example, non-volatile random-access memory (NVRAM), solid state drive (SSD).
+
+The volume of data read/write may affect the architecture model of burst buffer.
+
+Burst buffer nodes on Trinity is composed of IO nodes and 2 PCIe SSD cards.
+
+In ANL's supercomputing platform, burst buffers are potential distributed on each memory hierarchy.
+They may be put at computer nodes, board cabin or IO nodes.
+We may also need to use burst buffer as intermediate storage.
+
+
+
 
