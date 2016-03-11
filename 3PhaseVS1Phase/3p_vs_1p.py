@@ -99,7 +99,6 @@ def utilizationPlot(prefix, column='cpu'):
 
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_3p_vs_1p_%s.eps' % column, format='eps')
-    # plt.show()
 
 
 def timePlot(prefix, column='response'):
@@ -138,8 +137,8 @@ def timePlot(prefix, column='response'):
 
     plt.figure(figure_no)
     figure_no += 1
-    plt.plot(sorted_time0, yvals0*100, label='1 phase IO', linewidth=3,
-             color='blue', linestyle='--')
+    # plt.plot(sorted_time0, yvals0*100, label='1 phase IO', linewidth=3,
+             # color='blue', linestyle='--')
     plt.plot(sorted_time1, yvals1*100, label='1 phase BB', linewidth=3,
              color='red', linestyle='--')
     plt.plot(sorted_time2, yvals2*100, label='3 phase D', linewidth=3,
@@ -245,18 +244,18 @@ if __name__ == '__main__':
     first_row1 = ['jid', 'submit', 'iput',
                   'run', 'oput', 'complete',
                   'wait', 'response']
-    trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    cpu = BBCpu(300000, 8, 2.5)
-    bb = BBBurstBuffer(4000000, 8, 1)
-    io = BBIo(2.5, 1)
-    system = BBSystemBurstBuffer(cpu, bb, io)
-    data_range3 = [[1000, 60000, 1000],
-                   [1000, 60000, 1000],
-                   [1000, 60000, 1000]]
-    random_data = threePhaseDifferentData(data_range3)
-    threePhaseSameData(random_data)
-    onePhaseIO(random_data)
-    onePhaseBurstBuffer(random_data)
+    # trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
+    # cpu = BBCpu(300000, 8, 2.5)
+    # bb = BBBurstBuffer(4000000, 8, 1)
+    # io = BBIo(2.5, 1)
+    # system = BBSystemBurstBuffer(cpu, bb, io)
+    # data_range3 = [[1000, 60000, 1000],
+                   # [1000, 60000, 1000],
+                   # [1000, 60000, 1000]]
+    # random_data = threePhaseDifferentData(data_range3)
+    # threePhaseSameData(random_data)
+    # onePhaseIO(random_data)
+    # onePhaseBurstBuffer(random_data)
 
     timePlot(file_prefix, 'response')
     timePlot(file_prefix, 'wait_run')
