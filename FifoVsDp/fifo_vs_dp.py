@@ -115,6 +115,7 @@ def throughputPlot(prefix, delta=500.0):
         plt.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
+    plt.xlim([0, 50000])
     plt.legend(loc='upper right')
     plt.savefig(prefix + '_dp_vs_fifo_throughput.eps', fmt='eps')
 
@@ -161,9 +162,9 @@ def cdfPlot(prefix, column='wait'):
     time1 = data1[column]
     time2 = data2[column]
     time3 = data3[column]
-    time4 = data4[column]
-    time5 = data5[column]
-    time6 = data6[column]
+    # time4 = data4[column]
+    # time5 = data5[column]
+    # time6 = data6[column]
 
     sorted_time1 = np.sort(time1)
     yvals1 = np.arange(len(sorted_time1))/float(len(sorted_time1))
@@ -174,23 +175,24 @@ def cdfPlot(prefix, column='wait'):
     sorted_time3 = np.sort(time3)
     yvals3 = np.arange(len(sorted_time3))/float(len(sorted_time3))
 
-    sorted_time4 = np.sort(time4)
-    yvals4 = np.arange(len(sorted_time4))/float(len(sorted_time4))
+    # sorted_time4 = np.sort(time4)
+    # yvals4 = np.arange(len(sorted_time4))/float(len(sorted_time4))
 
-    sorted_time5 = np.sort(time5)
-    yvals5 = np.arange(len(sorted_time5))/float(len(sorted_time5))
+    # sorted_time5 = np.sort(time5)
+    # yvals5 = np.arange(len(sorted_time5))/float(len(sorted_time5))
 
-    sorted_time6 = np.sort(time6)
-    yvals6 = np.arange(len(sorted_time6))/float(len(sorted_time6))
+    # sorted_time6 = np.sort(time6)
+    # yvals6 = np.arange(len(sorted_time6))/float(len(sorted_time6))
 
     plt.figure(figure_no)
     figure_no += 1
     plt.plot(sorted_time1, yvals1*100, 'b--', label='Plain/BB IRO', linewidth=3)
     plt.plot(sorted_time2, yvals2*100, 'r-.', label='Max BB', linewidth=3)
     plt.plot(sorted_time3, yvals3*100, 'g:', label='Max #Tasks', linewidth=3)
-    plt.plot(sorted_time4, yvals4*100, 'y-', label='Direct IO', linewidth=3)
-    plt.plot(sorted_time5, yvals5*100, 'm-.', label='Direct BB', linewidth=3)
-    plt.plot(sorted_time6, yvals6*100, 'c:', label='Plain/BB D', linewidth=3)
+    # plt.plot(sorted_time4, yvals4*100, 'y-', label='Direct IO', linewidth=3)
+    # plt.plot(sorted_time5, yvals5*100, 'm-.', label='Direct BB', linewidth=3)
+    # plt.plot(sorted_time6, yvals6*100, 'c:', label='Plain/BB D', linewidth=3)
+    # plt.xlim([0, 100000])
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_fifo_vs_dp_%s.eps' % column, fmt='eps')
 
@@ -207,23 +209,23 @@ if __name__ == '__main__':
                   'run', 'oput', 'complete',
                   'wait', 'response']
     figure_no = 0
-    trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    data_range = [[1000, 10000, 1000],
-                  [1000, 10000, 1000],
-                  [1000, 10000, 1000]]
-    data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
+    # trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
+    # data_range = [[1000, 10000, 1000],
+                  # [1000, 10000, 1000],
+                  # [1000, 10000, 1000]]
+    # data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
 
-    cpu = BBCpu(300000, 8, 2.5)
-    bb = BBBurstBuffer(4000000, 8, 1)
-    io = BBIo(2.5, 1)
-    system = BBSystemBurstBuffer(cpu, bb, io)
+    # cpu = BBCpu(300000, 8, 2.5)
+    # bb = BBBurstBuffer(4000000, 8, 1)
+    # io = BBIo(2.5, 1)
+    # system = BBSystemBurstBuffer(cpu, bb, io)
 
-    runPlainBBScheduler()
-    runMaxParallelScheduler()
-    runMaxBBScheduler()
-    threePhaseSameData(data)
-    onePhaseIO(data)
-    onePhaseBurstBuffer(data)
+    # runPlainBBScheduler()
+    # runMaxParallelScheduler()
+    # runMaxBBScheduler()
+    # threePhaseSameData(data)
+    # onePhaseIO(data)
+    # onePhaseBurstBuffer(data)
     cdfPlot(file_prefix, 'response')
-    cmpDP(file_prefix, 'response')
+    # cmpDP(file_prefix, 'response')
     throughputPlot(file_prefix)
