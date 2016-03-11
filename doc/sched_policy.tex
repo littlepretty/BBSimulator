@@ -110,6 +110,10 @@ In practice, we could reduce the time complexity by allocating resource in a coa
 For example, jobs usually asks for compute node in the unit of 512 nodes;
 its demand for burst buffer nodes usually in the unit of 100 GB.
 Then we could divide both $CN$ and $c_i$ by 512; divide both $BB$ and $bb_in$ by 100.
+It is also possible to reduce the value of $n$, the number of jobs in the queue.
+For example, whenever we more resources, we can consider only $\frac{1}{\alpha}n$ jobs in the queue.
+This will give us only the partial optimal solution in exchange of less computation complexity.
+
 
 
 \begin{strip}

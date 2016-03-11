@@ -182,7 +182,7 @@ def jobPlot(prefix):
     plt.savefig(prefix + '_hist.eps', format='eps')
 
 
-def calculateThroughput(finish, interval):
+def calculateThroughput(finish, interval, delta=1000.0):
     throughputs = []
     i = 0
     for i in range(1, len(interval)):
@@ -213,7 +213,7 @@ def throughputPlot(prefix, delta=500.0):
         finish = np.sort(finish)
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
-        throughputs = calculateThroughput(finish, intervals)
+        throughputs = calculateThroughput(finish, intervals, delta)
         plt.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1

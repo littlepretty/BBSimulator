@@ -1,38 +1,9 @@
 #!/usr/bin/env python
 
-from bbsimulator.simulator import BBSimulatorCerberus, BBSimulatorDirect
-from bbsimulator.scheduler import BBSchedulerCerberus
-from bbsimulator.scheduler import BBSchedulerDirectIO
-from bbsimulator.scheduler import BBSystemBurstBuffer
-from bbsimulator.scheduler import BBCpu, BBBurstBuffer, BBIo
-from bbsimulator.trace_reader import BBTraceReader
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from bisect import bisect_left, bisect_right
-
-
-def runDirectIOScheduler(data):
-    simulator = BBSimulatorDirect(system)
-    scheduler = BBSchedulerDirectIO(system)
-    simulator.setScheduler(scheduler)
-    simulator.setEventGenerator('IO', system)
-    trace_reader.patchTraceFileOnePhase(data, mod_submit=True)
-    jobs = trace_reader.generateJobs()
-    simulator.simulate(jobs)
-    scheduler.outputJobSummary(file_prefix + '_direct.out.csv')
-
-
-def runPlainBBScheduler():
-    bb_simulator = BBSimulatorCerberus(system)
-    bb_scheduler = BBSchedulerCerberus(system)
-    bb_simulator.setScheduler(bb_scheduler)
-    data = trace_reader.patchTraceFileThreePhases(data_range,
-                                                  mod_submit=True)
-    bb_jobs = trace_reader.generateJobs()
-    bb_simulator.simulate(bb_jobs)
-    bb_scheduler.outputJobSummary(file_prefix + '_plain.out.csv')
-    return data
 
 
 def cdfPlot(prefix, column='response'):
@@ -91,7 +62,7 @@ def throughputPlot(prefix, delta=500.0):
         finish = np.sort(finish)
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
-        throughputs = calculateThroughput(finish, intervals, delta)
+        throughputs = calculateThroughput(finish, intervals)
         plt.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
@@ -104,10 +75,6 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     file_prefix = '1000jobs'
     figure_no = 0
-    trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    data_range = [[1000, 60000, 1000],
-                  [1000, 60000, 1000],
-                  [1000, 60000, 1000]]
     first_row1 = ['jid', 'submit', 'iput',
                   'run', 'oput', 'complete',
                   'wait', 'response']
@@ -115,13 +82,5 @@ if __name__ == '__main__':
                   'iput', 'wait_run', 'run',
                   'wait_out', 'oput', 'complete',
                   'wait', 'response']
-    cpu = BBCpu(300000, 8, 2.5)
-    bb = BBBurstBuffer(4000000, 8, 1)
-    io = BBIo(2.5, 1)
-    system = BBSystemBurstBuffer(cpu, bb, io)
-
-    data = runPlainBBScheduler()
-    runDirectIOScheduler(data)
-
     cdfPlot(file_prefix)
     throughputPlot(file_prefix)
