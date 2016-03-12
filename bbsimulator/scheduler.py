@@ -170,9 +170,6 @@ class BBSchedulerDirectIO(BBSchedulerDirect):
     def scheduleDirect(self):
         "return jobs with status running"
         jobs = []
-        # sort descendingly, max cpu utilization
-        # sort ascendingly, max parallelism
-        # self.direct_q.sort(key=lambda job: job.demand.num_core)
         while len(self.direct_q) > 0 and \
                 self.system.cpu.available >= self.direct_q[0].demand.num_core:
             job = self.direct_q.pop(0)

@@ -52,21 +52,40 @@ def throughputPlot(prefix, delta=500.0):
                           skip_header=1, names=first_row1)
     data2 = np.genfromtxt(file_prefix + '_plain.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    lines = ['b:', 'r:', 'g:', 'c-.', 'm-.', 'y:']
+    all_data = [data1, data2]
+    avgs = []
+    lines = ['b:', 'r-.', 'b', 'r']
     labels = ['Direct IO', 'Plain BB']
+    hatches = ['/', '\\', '-']
     i = 0
-    plt.figure(figure_no)
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
     figure_no += 1
-    for data in [data1, data2]:
+    width = 80000
+    end = -1
+    for data in all_data:
         finish = data['complete']
         finish = np.sort(finish)
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
+        end = max(end, intervals[-1])
         throughputs = calculateThroughput(finish, intervals)
-        plt.plot(intervals[1:], throughputs, lines[i],
+        avgs.append(np.mean(throughputs))
+        ax1.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
-    plt.legend(loc='upper right')
+    i = 0
+    end += 15000
+    for avg in avgs:
+        logging.info('Avg Throughput %s = %.3f' % (labels[i], avg))
+        ax2.bar(end + width * i, avg, width, hatch=hatches[i],
+                color=lines[i+2], label='Avg %s' % labels[i])
+        i += 1
+    ax2.set_ylim([0, 3])
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
+    ax1.grid()
+    plt.grid()
     plt.savefig(prefix + '_direct_vs_bb_throughput.eps', fmt='eps')
 
 
