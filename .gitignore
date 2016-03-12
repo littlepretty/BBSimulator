@@ -2,5 +2,5 @@
 .ropeproject
 *.egg-info
 *eps-converted-to.pdf
-
+*.pdf
 
