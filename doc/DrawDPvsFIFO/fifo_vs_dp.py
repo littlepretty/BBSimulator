@@ -37,7 +37,7 @@ def throughputPlot(prefix, delta=500.0):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     figure_no += 1
-    width = 20000
+    width = 10000
     end = -1
     for data in all_data:
         finish = data['complete']
@@ -59,11 +59,12 @@ def throughputPlot(prefix, delta=500.0):
                 color=lines[i+3], label='Avg %s' % labels[i])
         i += 1
 
-    ax2.set_ylim([2, 2.9])
-    ax2.set_yticks(np.arange(2.0, 3.0, 0.1))
+    ax2.set_ylim([0, 18])
+    ax2.set_yticks(np.arange(0.0, 20.0, 2))
     ax1.legend(loc='upper left')
     ax2.legend(loc='upper right')
     ax1.grid()
+
     plt.grid()
     plt.savefig(prefix + '_dp_vs_fifo_throughput.eps', fmt='eps')
 

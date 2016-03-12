@@ -8,12 +8,11 @@ In the following experiments, we compare two identical system except that
 IO nodes are replaced by the same number of burst buffer nodes.
 Eventually Trinity plans to delivery up to 576 burst buffer nodes of 3.7 PB,
 consisted of Trinity IO nodes with PCIe SSD card.
-They are globally accessible and distributed among cabinets.
-According to their hardware design, in our simulation, 
-Burst buffer nodes provide total capacity of 4.0 PB PCIe SSD intermediate storage.
+They are globally accessible as intermediate storage and distributed among cabinets.
 Sequential read/write between burst buffer and compute nodes is 8.0 GB/s.
 Bandwidth between CPU node and IO node is set to 2.5 GB/s.
-Job trace is from ANL's Blue Gene Intrepid system from January to September 2009.
+Job trace is from ANL's Blue Gene Intrepid system
+from January to September 2009\cite{JobTrace}.
 Each log entry contains information like jobs' submission time, running time,
 number of cores user requested and so on. 
 It is truncated so that only the first 1185 jobs are used in simulation.
@@ -95,6 +94,25 @@ subjecting to burst buffer volume constraint by Equation~\ref{Equ:MaxTaskNumberR
 
 As indicated by Figure~\ref{Fig:DPvsFIFOResponse}, response time of
 jobs scheduled by both Cerberus version 2 and 3 are reduced.
+The most non-responsive job for both Cerberus V2 and V3 is job \#944,
+taking 89809 and 88739 seconds respectively.
+It is this job that decides the finishing time of all 1185 jobs.
+That is 99244 seconds for Cerberus when it maximizing data throughput
+and 93115 seconds for Cerberus when it maximizing parallelable tasks.
+The plain Cerberus, scheduling jobs in queue with FCFS policy,
+makes system ends its last job, job \#1150, at 132010 seconds.
+The worst case improvement to FCFS-style Cerberus is 24.8\% for max-BB-style Cerberus
+and 29.5\% for max-number-task-style Cerberus.
+When we consider the overall response time of entire job set,
+we see more than 95\% of the tasks response faster when we choose jobs according to
+optimization result.
+The scheduling results of Cerberus V2 and V3 are fairly closed to each other.
+In this simulation, 75\% of the jobs could get better response time
+if we maximizing number of parallelable tasks,
+versus maximizing transferred data.
+
+We can see in Figure~\ref{Fig:DPvsFIFOThroughput} the throughput of system when scheduled by 3 different versions of Cerberus.
+
 
 
 
