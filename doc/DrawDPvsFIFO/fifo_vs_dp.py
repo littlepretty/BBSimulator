@@ -25,9 +25,9 @@ def throughputPlot(prefix, delta=500.0):
     data1 = np.genfromtxt(prefix + '_plain.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
     data2 = np.genfromtxt(file_prefix + '_maxbb.out.csv', delimiter=',',
-                          skip_header=1, names=first_row1)
+                          skip_header=1, names=first_row3)
     data3 = np.genfromtxt(file_prefix + '_maxparallel.out.csv', delimiter=',',
-                          skip_header=1, names=first_row1)
+                          skip_header=1, names=first_row3)
     lines = ['b-.', 'r-.', 'g:', 'b', 'r', 'g']
     labels = ['Plain BB', 'Max BB', 'Max #Tasks', 'Plain BB 1D']
     hatches = ['/', '\\', '-']
@@ -42,6 +42,7 @@ def throughputPlot(prefix, delta=500.0):
     for data in all_data:
         finish = data['complete']
         finish = np.sort(finish)
+        logging.info('Ending time = %.2f' % finish[-1])
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
         throughputs = calculateThroughput(finish, intervals)
@@ -59,8 +60,9 @@ def throughputPlot(prefix, delta=500.0):
                 color=lines[i+3], label='Avg %s' % labels[i])
         i += 1
 
-    ax2.set_ylim([0, 18])
-    ax2.set_yticks(np.arange(0.0, 20.0, 2))
+    ax1.set_ylim([0, 50])
+    ax2.set_ylim([0, 9])
+    ax2.set_yticks(np.arange(0.0, 9.6, 1.8))
     ax1.legend(loc='upper left')
     ax2.legend(loc='upper right')
     ax1.grid()
