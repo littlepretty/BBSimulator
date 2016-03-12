@@ -1,64 +1,9 @@
 #!/usr/bin/env python
 
-from bbsimulator.simulator import BBSimulatorCerberus, BBSimulatorDirect
-from bbsimulator.scheduler import BBSchedulerCerberus
-from bbsimulator.scheduler import BBSchedulerDirectBB
-from bbsimulator.scheduler import BBSchedulerDirectIO
-from bbsimulator.scheduler import BBSystemBurstBuffer
-from bbsimulator.scheduler import BBCpu, BBBurstBuffer, BBIo
-from bbsimulator.trace_reader import BBTraceReader
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from bisect import bisect_left, bisect_right
-
-
-def threePhaseDifferentData(data_range):
-    bb_simulator = BBSimulatorCerberus(system)
-    bb_scheduler = BBSchedulerCerberus(system)
-    bb_simulator.setScheduler(bb_scheduler)
-    data = trace_reader.patchTraceFileThreePhases(data_range,
-                                                  mod_submit=True)
-    jobs = trace_reader.generateJobs()
-    bb_simulator.simulate(jobs)
-    bb_scheduler.outputJobSummary(file_prefix + '_3p_diff.out.csv')
-    bb_simulator.dumpSystemStatistics(file_prefix + '_3p_diff.usg.csv')
-    return data
-
-
-def threePhaseSameData(data):
-    bb_simulator = BBSimulatorCerberus(system)
-    bb_scheduler = BBSchedulerCerberus(system)
-    bb_simulator.setScheduler(bb_scheduler)
-    trace_reader.patchTraceFileOnePhase(data, mod_submit=True)
-    jobs = trace_reader.generateJobs()
-    bb_simulator.simulate(jobs)
-    bb_scheduler.outputJobSummary(file_prefix + '_3p_same.out.csv')
-    bb_simulator.dumpSystemStatistics(file_prefix + '_3p_same.usg.csv')
-
-
-def onePhaseIO(data):
-    simulator = BBSimulatorDirect(system)
-    scheduler = BBSchedulerDirectIO(system)
-    simulator.setScheduler(scheduler)
-    simulator.setEventGenerator('IO', system)
-    trace_reader.patchTraceFileOnePhase(data, mod_submit=True)
-    jobs = trace_reader.generateJobs()
-    simulator.simulate(jobs)
-    scheduler.outputJobSummary(file_prefix + '_1pio.out.csv')
-    simulator.dumpSystemStatistics(file_prefix + '_1pio.usg.csv')
-
-
-def onePhaseBurstBuffer(data):
-    bb_simulator = BBSimulatorDirect(system)
-    bb_scheduler = BBSchedulerDirectBB(system)
-    bb_simulator.setScheduler(bb_scheduler)
-    bb_simulator.setEventGenerator('BB', system)
-    trace_reader.patchTraceFileOnePhase(data, mod_submit=True)
-    jobs = trace_reader.generateJobs()
-    bb_simulator.simulate(jobs)
-    bb_scheduler.outputJobSummary(file_prefix + '_1pbb.out.csv')
-    bb_simulator.dumpSystemStatistics(file_prefix + '_1pbb.usg.csv')
 
 
 def utilizationPlot(prefix, column='cpu'):
@@ -136,7 +81,8 @@ def timePlot(prefix, column='response'):
              color='green', linestyle='--')
     plt.plot(sorted_time3, yvals3*100, label='3 phase IRO', linewidth=3,
              color='black', linestyle='--')
-
+    plt.ylim([0, 101])
+    plt.grid()
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_3p_vs_1p_%s.eps' % column, format='eps')
     # plt.show()
@@ -233,8 +179,9 @@ def throughputPlot(prefix, delta=500.0):
         i += 1
     ax1.legend(loc='upper left')
     ax2.legend(loc='upper right')
-    ax2.set_ylim([0, 2.8])
-    ax2.set_yticks(np.arange(0, 3.2, 0.4))
+    ax1.set_ylim([0, 18])
+    ax2.set_ylim([0, 2.7])
+    ax2.set_yticks(np.arange(0, 3.0, 0.3))
     ax1.grid()
     plt.grid()
     plt.savefig(prefix + '_3p_vs_1p_throughput.eps', fmt='eps')
@@ -252,23 +199,6 @@ if __name__ == '__main__':
     first_row1 = ['jid', 'submit', 'iput',
                   'run', 'oput', 'complete',
                   'wait', 'response']
-    trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    cpu = BBCpu(300000, 8, 2.5)
-    bb = BBBurstBuffer(4000000, 8, 1)
-    io = BBIo(2.5, 1)
-    system = BBSystemBurstBuffer(cpu, bb, io)
-    data_range3 = [[1000, 60000, 1000],
-                   [1000, 60000, 1000],
-                   [1000, 60000, 1000]]
-    # random_data = threePhaseDifferentData(data_range3)
-    # logging.info(str(system))
-    # threePhaseSameData(random_data)
-    # logging.info(str(system))
-    # onePhaseIO(random_data)
-    # logging.info(str(system))
-    # onePhaseBurstBuffer(random_data)
-    # logging.info(str(system))
-
     timePlot(file_prefix, 'response')
     timePlot(file_prefix, 'wait_run')
     # utilizationPlot(file_prefix, 'cpu')
