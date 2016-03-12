@@ -28,7 +28,8 @@ def cdfPlot(prefix, column='response'):
     plt.plot(sorted_time1, yvals1*100, label='BB Plain', linewidth=3,
              color='red', linestyle='--')
     plt.legend(loc='lower right')
-    # plt.xlim([0, 100000])
+    plt.ylim([0, 101])
+    plt.grid()
     plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps')
 
 
