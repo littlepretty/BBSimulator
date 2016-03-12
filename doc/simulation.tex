@@ -1,6 +1,7 @@
 \section{Simulation Results}
-We consider simulating the full Trinity super computer.
-The number of compute nodes on Trinity is about 18936, 9436 Intel Haswell nodes
+We consider simulating the full Trinity super computer\cite{TrinitySystem}.
+The number of compute nodes on Trinity is about 18936,
+e.g. 9436 Intel Haswell nodes
 and at least 9500 Intel Xeon Phi nodes.
 There are 16 cores on each processor, thus totally 302976 cores.
 In the following experiments, we compare two identical system except that
@@ -22,7 +23,8 @@ We assume they follows uniform distribution with low boundary 1 TB and high boun
 The patches 3 fields may or may not be used in scheduling,
 depends on both the model of the jobs and the experiment scenario.
 
-Following sections discuss or answer 3 key questions.
+Following sections discuss or answer 3 key questions by
+simulating the Trinity system described above.
 Will Cerberus improve application performance by utilizing burst buffer nodes?
 Can Cerberus with optimization improve application performance?
 Will job demand on burst buffer effect Cerberus?
@@ -31,7 +33,7 @@ Will job demand on burst buffer effect Cerberus?
 \label{Sec:Sim:DirectIOvsBB}
 In this section, we demonstrate that by utilizing burst buffer nodes,
 job scheduler could improve the applications' performance.
-Figure \ref{Fig:DirectIOvsBBResponseTime} compares CDF of the response time of 1000 jobs.
+Figure~\ref{Fig:DirectIOvsBBResponse} compares CDF of the response time of 1000 jobs.
 When scheduler can allocate burst buffer to jobs (denoted as Plain BB),
 all jobs finish in 360,000 seconds counting from their submission time.
 However, the worst case in system without burst buffer (denoted as Direct IO) is catastrophical.
@@ -43,19 +45,20 @@ traditional IO nodes and burst buffer nodes.
 There are only less than 10\% of the jobs response quicker without needing burst buffer.
 
 Using the collected completion time, we can calculate system's throughput over time sequence.
-Figure \ref{Fig:DirectIOvsBBThroughput} shows the number of tasks finished
+Figure~\ref{Fig:DirectIOvsBBThroughput} shows the number of tasks finished
 in a fixed time unit (500 seconds) for system using burst buffer nodes and not.
 It takes more than 1,382,769 seconds for the system without burst buffer nodes to
 server all 1000 jobs.
 The last job is job \#1150, which requested 4096 cores and 49 TB data space.
 It starts at 1169 seconds and finishes at 1,383,938 seconds.
 In contrast, when system installed burst buffer nodes,
-it accomplish the same 1185 jobs in 336,396 seconds.
+it accomplishes the same 1185 jobs in 336,396 seconds.
 Job \#1150 is the second last job finished, but both its completion time and response time
 are significantly reduced, 268701 and 267531 seconds respectively.
 As indicated by the horizontal lines (green for Direct IO and yellow for Plain BB),
 the ratio of average throughput between two systems is about 4, namely 1.769 to 0.431.
-This approximately coincides with the response speedup due to burst buffer equipments.
+This approximately coincides with the 4-time response speedup,
+made possible due to burst buffer equipments.
 
 
 \begin{figure}[!t]
@@ -76,15 +79,21 @@ This approximately coincides with the response speedup due to burst buffer equip
 \subsection{Cerberus vs. Cerberus with Optimization}
 If we consider optimizing either burst buffer's data throughput or the parallelism across jobs,
 dynamic programming based job scheduler can further reduce jobs' wait time.
-We plot in Figure \ref{Fig:DPvsFIFOResponse} the resulting response time of three different scheduler
-regarding how they handle jobs in their queues(input queue, run queue, and output queue).
+We plot in Figure~\ref{Fig:DPvsFIFOResponse} the resulting response time of
+three version of Cerberus scheduler differs in
+how they handle jobs in their queues (input queue, run queue, and output queue).
 The first scheduler uses naive first come first serve (FCFS) policy.
 Whoever at the front of queue are considered favorably.
 The second and third scheduler treat jobs in run queue identically.
-They choose jobs according to the optimization solution given by \ref{Equ:MaxProductRecursion}
+They choose jobs according to the optimization solution given by Equation~\ref{Equ:MaxProductRecursion}
 However, they treat jobs in the input queue and output queue differently.
-The second scheduler will select these jobs in its queue so that volume of transferred data is maximized.
-The third scheduler tries to optimize the number of schedulable jobs by using \ref{Equ:MaxTaskNumberRecursion}.
+The second scheduler will select these jobs in its queue so that
+volume of to be transferred data is maximized.
+The dynamic programming recursion is Equation~\ref{Equ:MaxTransferDataRecursion}
+The third scheduler tries to optimize the number of jobs
+subjecting to burst buffer volume constraint by Equation ~\ref{Equ:MaxTaskNumberRecursion}.
+
+
 
 
 \begin{figure}[!t]
@@ -109,7 +118,7 @@ Applications are benefited when scheduler dividing jobs into 3 separated phases 
 scheduling are based on corresponding burst buffer demand in each phase.
 This suggests that user should provide burst buffer demand as granular as possible.
 
-In Figure \ref{Fig:3Pvs1PResponseTime}, we plot 3 different scheduling results by 3 FCFS scheduler.
+In Figure~\ref{Fig:3Pvs1PResponse}, we plot 3 different scheduling results by 3 FCFS scheduler.
 Jobs in the first case, denoted as Direct BB, are modeled as just 1 phase because user just provides
 a general burst buffer demand throughout entire application life time.
 We assume this demand is the $\max \{data\_in, data\_out, data\_run\}$.
@@ -119,7 +128,7 @@ Jobs in the second and third cases have 3 phases and are scheduled by Cerberus.
 However, in the second case, denoted as Plain BB 1D, Cerberus only knows the overall burst buffer demand,
 same as the information in case 1.
 In the 3rd case, named Plain BB 3P, users kindly provided all the burst buffer demand in all 3 phases.
-This is the same case as in section \ref{Sec:Sim:DirectIOvsBB} when we demonstrating burst buffer is beneficial.
+This is the same case as in section~\ref{Sec:Sim:DirectIOvsBB} when we demonstrating burst buffer is beneficial.
 We simulate the 3 cases with the same generated random data volume.
 For 1-phase-modeled jobs, scheduler will make decision based on $\max \{data\_in, data\_out, data\_run\}$
 since we assume user will only tell the upper bound of its application's demand.
@@ -150,9 +159,9 @@ on the same condition that the same amount of burst buffer nodes are available t
 Meanwhile, more than 90\% of the jobs takes less time if user specifies data usage demand
 at each phase to Cerberus.
 
-Figure \ref{Fig:3Pvs1PThroughput} describes system throughput of these three different scenarios.
+Figure~\ref{Fig:3Pvs1PThroughput} describes system throughput of these three different scenarios.
 It helps us examine the performance of the scheduling in time sequence.
-For 1-phase-modeled job, we can see an obvious 'throughput gap'
+For 1-phase-modeled job, we can see an obvious `throughput gap'
 from 150,000 second to 250,000 second approximately.
 This is the result of too aggressive scheduling at the beginning.
 For the case of 3-phase D, throughput also starts provocatively,

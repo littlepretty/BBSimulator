@@ -16,10 +16,9 @@ FILE_NAME=bbscheduler
 .PHONY: all, clean, view
 
 all:
-	# $(LATEX) $(FILE_NAME).tex
 	$(PDFLATEX) $(FILE_NAME).tex
-	#$(BIBTEX) $(FILE_NAME).aux
-	#$(PDFLATEX) $(FILE_NAME).tex
+	$(BIBTEX) $(FILE_NAME).aux
+	$(PDFLATEX) $(FILE_NAME).tex
 	$(PDFLATEX) $(FILE_NAME).tex
 
 view: all

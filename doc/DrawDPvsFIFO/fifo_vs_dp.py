@@ -118,7 +118,8 @@ def cdfPlot(prefix, column='wait'):
         plt.plot(sorted_time, yvals*100, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
-    # plt.xlim([0, 100000])
+    plt.ylim([0, 101])
+    plt.grid()
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_dp_vs_fifo_%s.eps' % column, fmt='eps')
 

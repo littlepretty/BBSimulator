@@ -182,7 +182,7 @@ def jobPlot(prefix):
     plt.savefig(prefix + '_hist.eps', format='eps')
 
 
-def calculateThroughput(finish, interval, delta=1000.0):
+def calculateThroughput(finish, interval):
     throughputs = []
     i = 0
     for i in range(1, len(interval)):
@@ -200,25 +200,44 @@ def throughputPlot(prefix, delta=500.0):
     global figure_no
     data1 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    data5 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
+    data2 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
-    data6 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
+    data3 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    lines = ['b:', 'r:', 'g:', 'c-.', 'm-.', 'y:']
+    all_data = [data1, data2, data3]
+    avgs = []
+    lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
     labels = ['Direct BB', 'Plain BB 1D', 'Plain BB 3P']
+    hatches = ['/', '\\', '-']
+    width = 20000
     i = 0
-    plt.figure(figure_no)
-    for data in [data5, data6, data1]:
+    end = -1
+    fig, ax1 = plt.subplots()
+    for data in all_data:
         finish = data['complete']
         finish = np.sort(finish)
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
-        throughputs = calculateThroughput(finish, intervals, delta)
-        plt.plot(intervals[1:], throughputs, lines[i],
+        throughputs = calculateThroughput(finish, intervals)
+        avgs.append(np.mean(throughputs))
+        end = max(end, intervals[-1])
+        ax1.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
-    plt.legend(loc='upper right')
-    plt.savefig(prefix + '3p_vs_1p_throughput.eps', fmt='eps')
+    i = 0
+    ax2 = ax1.twinx()
+    for avg in avgs:
+        logging.info('Avg Throughput of %s = %.3f' % (labels[i], avg))
+        ax2.bar(end + i*width, avg, width, color=lines[i+3],
+                label='Avg %s' % labels[i], hatch=hatches[i])
+        i += 1
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
+    ax2.set_ylim([0, 2.8])
+    ax2.set_yticks(np.arange(0, 3.2, 0.4))
+    ax1.grid()
+    plt.grid()
+    plt.savefig(prefix + '_3p_vs_1p_throughput.eps', fmt='eps')
 
 
 if __name__ == '__main__':
