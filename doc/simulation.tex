@@ -84,14 +84,17 @@ three version of Cerberus scheduler differs in
 how they handle jobs in their queues (input queue, run queue, and output queue).
 The first scheduler uses naive first come first serve (FCFS) policy.
 Whoever at the front of queue are considered favorably.
-The second and third scheduler treat jobs in run queue identically.
+The second and third version treat jobs in run queue identically.
 They choose jobs according to the optimization solution given by Equation~\ref{Equ:MaxProductRecursion}
 However, they treat jobs in the input queue and output queue differently.
-The second scheduler will select these jobs in its queue so that
+The second version will select these jobs in its queue so that
 volume of to be transferred data is maximized.
 The dynamic programming recursion is Equation~\ref{Equ:MaxTransferDataRecursion}
-The third scheduler tries to optimize the number of jobs
-subjecting to burst buffer volume constraint by Equation ~\ref{Equ:MaxTaskNumberRecursion}.
+The third version of Cerberus tries to optimize the number of jobs,
+subjecting to burst buffer volume constraint by Equation~\ref{Equ:MaxTaskNumberRecursion}.
+
+As indicated by Figure~\ref{Fig:DPvsFIFOResponse}, response time of
+jobs scheduled by both Cerberus version 2 and 3 are reduced.
 
 
 
