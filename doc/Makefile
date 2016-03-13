@@ -23,8 +23,7 @@ all:
 
 view: all
 	$(VIEWER) $(FILE_NAME).pdf
-	rm *.log *.aux *.out *.blg *.bbl
-	rm *-eps-converted-to.pdf
+	rm *.log *.aux *.blg *.bbl
 
 clean:
 	rm *.log *.aux *.dvi *.out *.blg *.bbl *.ps *.bak
