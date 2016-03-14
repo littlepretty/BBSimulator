@@ -1,14 +1,4 @@
-\section{Experimental Validation}
-
-This section discusses or tries to answer several key questions by
-simulating the Trinity system described later.
-Will Cerberus improve application performance by utilizing burst buffer nodes?
-Will job demand on burst buffer effect Cerberus?
-Why bother to model the job execution in 3 phases?
-Can dynamic programming based optimization help Cerberus further
-improve application performance?
-
-\subsection{Simulation Settings}
+\section{Simulation Results}
 We consider simulating the full Trinity super computer\cite{TrinitySystem}.
 The number of compute nodes on Trinity is about 18936,
 e.g. 9436 Intel Haswell nodes
@@ -23,18 +13,20 @@ Sequential read/write between burst buffer and compute nodes is 8.0 GB/s.
 Bandwidth between CPU node and IO node is set to 2.5 GB/s.
 Job trace is from ANL's Blue Gene Intrepid system
 from January to September 2009\cite{JobTrace}.
-We extract two critical fields from this jobs trace: running time and
-number of cores user requested.
-This trace contains 68936 jobs but
-only the first 1185 jobs are considered in this section's simulation.
+Each log entry contains information like jobs' submission time, running time,
+number of cores user requested and so on. 
+It is truncated so that only the first 1185 jobs are used in simulation.
 We patched 3 fields to each job's log entry: the amount of input data $data\_in$,
-the amount of written data during checkpointing $data\_run$
-and the amount of output data $data\_out$.
-We assume they follows uniform distribution with
-low boundary 1 TB and high boundary 60 TB.
+the amount of written data during checkpointing $data\_run$ and the amount of output data $data\_out$.
+We assume they follows uniform distribution with low boundary 1 TB and high boundary 60 TB.
 The patches 3 fields may or may not be used in scheduling,
 depends on both the model of the jobs and the experiment scenario.
 
+Following sections discuss or answer 3 key questions by
+simulating the Trinity system described above.
+Will Cerberus improve application performance by utilizing burst buffer nodes?
+Can Cerberus with optimization improve application performance?
+Will job demand on burst buffer effect Cerberus?
 
 \subsection{Cerberus vs. 1-Phase Batch Scheduler}
 \label{Sec:Sim:DirectIOvsBB}
@@ -78,8 +70,70 @@ made possible due to burst buffer equipments.
 \begin{figure}[!t]
 \centering
 \includegraphics[width=3.2in]{DrawDirectIOvsBB/1000jobs_direct_vs_bb_throughput}
-\caption{System Throughput, IO Node Only vs. Burst Buffer System}
+\caption{Application Throughput, IO Node Only vs. Burst Buffer System}
 \label{Fig:DirectIOvsBBThroughput}
+\end{figure}
+
+
+\subsection{Cerberus vs. Cerberus with Optimization}
+If we consider optimizing either burst buffer's data throughput or the parallelism across jobs,
+dynamic programming based job scheduler can further reduce jobs' wait time.
+We plot in Figure~\ref{Fig:DPvsFIFOResponse} the resulting response time of
+three version of Cerberus scheduler differs in
+how they handle jobs in their queues (input queue, run queue, and output queue).
+The first scheduler uses naive first come first serve (FCFS) policy.
+Whoever at the front of queue are considered favorably.
+The second and third version treat jobs in run queue identically.
+They choose jobs according to the optimization solution given by Equation~\ref{Equ:MaxProductRecursion}
+However, they treat jobs in the input queue and output queue differently.
+The second version will select these jobs in its queue so that
+volume of to be transferred data is maximized.
+The dynamic programming recursion is Equation~\ref{Equ:MaxTransferDataRecursion}
+The third version of Cerberus tries to optimize the number of jobs,
+subjecting to burst buffer volume constraint by Equation~\ref{Equ:MaxTaskNumberRecursion}.
+
+As indicated by Figure~\ref{Fig:DPvsFIFOResponse}, response time of
+jobs scheduled by both Cerberus version 2 and 3 are reduced.
+The most non-responsive job for both Cerberus V2 and V3 is job \#944,
+taking 89809 and 88739 seconds respectively.
+It is this job that decides the finishing time of all 1185 jobs.
+That is 99244 seconds for Cerberus when it maximizing data throughput
+and 93115 seconds for Cerberus when it maximizing parallelable tasks.
+The plain Cerberus, scheduling jobs in queue with FCFS policy,
+makes system ends its last job, job \#1150, at 132010 seconds.
+The worst case improvement to FCFS-style Cerberus is 24.8\% for max-BB-style Cerberus
+and 29.5\% for max-number-task-style Cerberus.
+When we consider the overall response time of entire job set,
+we see more than 95\% of the tasks response faster when we choose jobs according to
+optimization result.
+The scheduling results of Cerberus V2 and V3 are fairly closed to each other.
+In this simulation, 75\% of the jobs could get better response time
+if we maximizing number of parallelable tasks,
+versus maximizing transferred data.
+
+We can see in Figure~\ref{Fig:DPvsFIFOThroughput} the throughput of system
+when scheduled by 3 different versions of Cerberus over time sequence.
+First of all, the system's throughputs are almost identical
+under two optimization policies.
+Not only they are close to each other overall 
+
+
+
+
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=3.2in]{DrawDPvsFIFO/1000jobs_dp_vs_fifo_response}
+\caption{Application Response, Dynamic Programming vs. FCFS}
+\label{Fig:DPvsFIFOResponse}
+\end{figure}
+
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=3.2in]{DrawDPvsFIFO/1000jobs_dp_vs_fifo_throughput}
+\caption{Application Throughput, Dynamic Programming vs. FCFS}
+\label{Fig:DPvsFIFOThroughput}
 \end{figure}
 
 
@@ -157,82 +211,11 @@ the necessity that user provides data capacity demand for each phase.
 \label{Fig:3Pvs1PResponse}
 \end{figure}
 
-\begin{figure}[!t]
+\begin{figure*}[!t]
 \centering
-\includegraphics[width=3.2in]{Draw3Pvs1P/1000jobs_3p_vs_1p_throughput}
+\includegraphics[width=7.0in]{Draw3Pvs1P/1000jobs_3p_vs_1p_throughput}
 \caption{System Throughput, 1 Phase Model vs. 3 Phase Model}
 \label{Fig:3Pvs1PThroughput}
-\end{figure}
-
-
-
-\subsection{Cerberus vs. Cerberus with Optimization}
-If we consider optimizing either burst buffer's data throughput or the parallelism across jobs,
-dynamic programming based job scheduler can further reduce jobs' wait time.
-We plot in Figure~\ref{Fig:DPvsFIFOResponse} the resulting response time of
-three version of Cerberus scheduler differs in
-how they handle jobs in their queues (input queue, run queue, and output queue).
-The first scheduler uses naive first come first serve (FCFS) policy.
-Whoever at the front of queue are considered favorably.
-The second and third version treat jobs in run queue identically.
-They choose jobs according to the optimization solution given by Equation~\ref{Equ:MaxProductRecursion}
-However, they treat jobs in the input queue and output queue differently.
-The second version will select these jobs in its queue so that
-volume of to be transferred data is maximized.
-The dynamic programming recursion is Equation~\ref{Equ:MaxTransferDataRecursion}
-The third version of Cerberus tries to optimize the number of jobs,
-subjecting to burst buffer volume constraint by Equation~\ref{Equ:MaxTaskNumberRecursion}.
-
-As indicated by Figure~\ref{Fig:DPvsFIFOResponse}, response time of
-jobs scheduled by both Cerberus version 2 and 3 are reduced.
-The most non-responsive job for both Cerberus V2 and V3 is job \#944,
-taking 89809 and 88739 seconds respectively.
-In contrast, job \#1150 takes 120466 seconds to finish when Cerberus using FCFS.
-This is 25.4\% slower than Cerberus V2 and 26.3\% slower than Cerberus V3.
-When we consider the overall response time of entire job set,
-we see more than 95\% of the tasks response faster when we choose jobs according to
-optimization result.
-The scheduling results of Cerberus V2 and V3 are fairly closed to each other.
-In this simulation, 75\% of the jobs could get better response time
-if we maximizing number of parallelable tasks,
-versus maximizing transferred data.
-
-We can see in Figure~\ref{Fig:DPvsFIFOThroughput} the throughput of system
-when scheduled by 3 different versions of Cerberus.
-For optimal Cerberus, job \#944 decides the finishing time of all 1185 jobs.
-That is 99244 seconds for Cerberus when it maximizing data throughput
-and 93115 seconds for Cerberus when it maximizing parallelable tasks.
-The plain Cerberus, scheduling jobs in queue with FCFS policy,
-makes system ends its last job, job \#1150, at 132010 seconds.
-The worst case completion improvement to FCFS-style Cerberus is
-24.8\% for max-BB-style Cerberus and 29.5\% for max-number-task-style Cerberus.
-When we look at the time sequence of throughput,
-we found the peak value 36 jobs / 500 seconds obtained Cerberus
-when maximizing the number of parallel tasks being able to run.
-The alternative optimization method, maximizing burst buffer's usage,
-could achieve 28 jobs / 500 seconds before 20000 seconds.
-The peak throughput of FCFS policy is 22 jobs / 500 seconds around 50000 seconds.
-Mean throughputs of these 3 scheduling methods are drawn
-as bar chart in Figure~\ref{Fig:DPvsFIFOThroughput}.
-Comparing with FCFS Cerberus, max-BB version achieves
-34.2\% higher average throughput (6.030 jobs / 500 seconds)
-while max-number-task version gives 40.8\% improvement (6.330 jobs / 500 seconds),
-that is, extra 6.6\% enhancement to max-BB version.
-
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=3.2in]{DrawDPvsFIFO/1000jobs_dp_vs_fifo_response}
-\caption{Application Response, Dynamic Programming vs. FCFS}
-\label{Fig:DPvsFIFOResponse}
-\end{figure}
-
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=3.2in]{DrawDPvsFIFO/1000jobs_dp_vs_fifo_throughput}
-\caption{System Throughput, Dynamic Programming vs. FCFS}
-\label{Fig:DPvsFIFOThroughput}
-\end{figure}
+\end{figure*}
 
 
