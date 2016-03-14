@@ -1,26 +1,72 @@
 \section{Introduction}
 
-Challenges due to huge amount of scientific data used by applications.
-Data requirements for applications at ALCF BG/P.
+In today's high-performance computing (HPC) systems, application's performance
+is no longer only throttled by computation capability, but also perceived I/O rate between
+enumous amount of parallel processor cores and petabyte volume of storage equipments.
+Current IO architects put IO forwarding nodes in charge of performing IO.
+These IO gateways, together with parallel file system (PFS) software (client side), sits
+between internal system networks that serving communication between compute nodes
+and external system networks that interconnects storage nodes\cite{Ross:IOSystem}.
+Applications under this archietecure can expect to achieve
+810 GB/s per PFS sustained bandwidth in Trinity's Lustre\cite{TrinitySystem},
+but still far from the target of 60 TB/s for exascale computing platform\cite{Shalf:HPCCS:2010}.
 
-Storage gap between memory and disk.
 
-Current architecture: IO forwarding nodes/IO gateways with PFSs sit between compute nodes and SAN (storage nodes + disk array)
+The challenge roots in the missing gap in HPC's memory hierarchy.
+The ratio of IO rate of memory on the compute node to the storage disk
+is 100 to 10,000 cycles\cite{TrinitySystem}.
+Such a gap makes difference because scientific applications on HPC are exposed to
+bursty IO patterns\cite{Carns:MSST:2011, Kim:PDSW:2010}.
+On one hand, applications have the need to checkpoint perodicall as
+defensive IO strategy\cite{Latham:CSD:2012, Naik:ICPPW:2009, Dennis:CUG:2009}
+or store intermediate output for subsequent use in visualization;
+on the other hand, pushing data from memory to external, parallel file system is
+unproductive due to this IO gap.
+Even worst, production applications could generate hundreds of GiB to tens of TiB data
+in one such IO requesti, reported on Intrepid\cite{Liu:MSST:2012}.
+Therefore current IO architecture must make significant change to catch up with
+the ever-increasing computational performance and parallelism of HPC system.
 
-Burst buffer nodes fills the gap by utilizing various types of memory, for example, non-volatile random-access memory (NVRAM), solid state drive (SSD).
+
+Burst buffer nodes comes to rescue by utilizing
+various types of memory, for example, non-volatile random-access memory (NVRAM) and
+solid state drive (SSD).
+The driver behind is these storage technologies' decreasing cost of bandwidth.
+In practice, it can suits up with DataWarp application I/O accelerator\cite{DataWarp}.
+These nodes essentially augment the IO stack with
+a intermediate, productive offloading layer.
+For example, an application's latest checkpoing can be pre-staged
+before previous job terminates;
+or an application can burst its checkpoint to burst buffer
+with extremely high speed (4.4-17.8 TB/s on Trinity);
+application data is able to drain off ???????????????????????
+When utilizing burst buffer in this primary scenario
+bursty application IO operations can thus be aggregated and absorbed into burst buffers.
+This makes it possible to shift computations that follows IO bursts to an eariler moment
+while burst buffer takes charge of moving potentially TB level of data.
+
+There are more use cases for burst buffer nodes.
+
+Economical solid-state disks as a tier of burst buffer could also be used as
+out-of-core storage.
+
 
 The volume of data read/write may affect the architecture model of burst buffer.
-
 Burst buffer nodes on Trinity is composed of IO nodes and 2 PCIe SSD cards.
+In ANL's supercomputing platform, burst buffers are potential distributed
+on each memory hierarchy.
+They may be deployed at local computer nodes, board in cabinet or IO nodes.
+We may also use burst buffer as intermediate storage.
 
-In ANL's supercomputing platform, burst buffers are potential distributed on each memory hierarchy.
-They may be put at computer nodes, board cabin or IO nodes.
-We may also need to use burst buffer as intermediate storage.
 
 
-Test reference:\cite{Liu:MSST:12}
-\cite{SlurmBBGuide}
-\cite{Romanus:CORR:15}
+Contribution of this paper includes:
+\begin{enumerate}
+        \item Explore what will happen when HPC workload scheduler starts to consider
+        allocate burst buffer nodes
+\end{enumerate}
+
+
 
 
 
