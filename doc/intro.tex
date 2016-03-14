@@ -1,5 +1,6 @@
 \section{Introduction}
 
+%1. Current IO structure
 In today's high-performance computing (HPC) systems, application's performance
 is no longer only throttled by computation capability, but also perceived I/O rate between
 enumous amount of parallel processor cores and petabyte volume of storage equipments.
@@ -11,7 +12,7 @@ Applications under this archietecure can expect to achieve
 810 GB/s per PFS sustained bandwidth in Trinity's Lustre\cite{TrinitySystem},
 but still far from the target of 60 TB/s for exascale computing platform\cite{Shalf:HPCCS:2010}.
 
-
+%2. Challenge to current architecture
 The challenge roots in the missing gap in HPC's memory hierarchy.
 The ratio of IO rate of memory on the compute node to the storage disk
 is 100 to 10,000 cycles\cite{TrinitySystem}.
@@ -27,10 +28,9 @@ in one such IO requesti, reported on Intrepid\cite{Liu:MSST:2012}.
 Therefore current IO architecture must make significant change to catch up with
 the ever-increasing computational performance and parallelism of HPC system.
 
-
-Burst buffer nodes comes to rescue by utilizing
-various types of memory, for example, non-volatile random-access memory (NVRAM) and
-solid state drive (SSD).
+%3. The appear of burst buffer
+Burst buffer nodes debut as a rescue by utilizing various types of memory,
+for example, non-volatile random-access memory (NVRAM) and solid state drive (SSD).
 The driver behind is these storage technologies' decreasing cost of bandwidth.
 In practice, it can suits up with DataWarp application I/O accelerator\cite{DataWarp}.
 \textit{A figure here illustrate the architecture of Burst Buffer}.
@@ -41,6 +41,8 @@ Alternatively, many researchers proposed to distribute burst buffer
 on multiple layers of the memory hierarchy\cite{Romanus:CORR:15}.
 For example, they may be deployed at local computer nodes, board in cabinet or IO nodes.
 We may also use burst buffer as intermediate storage system.
+
+%4. Use cases of burst buffer
 Regardless of the specific implementation, these nodes essentially augment
 the IO stack with a intermediate, productive offloading layer.
 For example, an application's latest checkpoing can be pre-staged
@@ -65,6 +67,7 @@ out-of-core complement to insufficient main memory\cite{Romanus:CORR:15},
 working place for data analysis (reductions, feature extraction compression etc.)
 and visualization\cite{BBUseCase}.
 
+%5. Motivate burst buffer aware scheduler
 Given the critical role of burst buffer in future HPC IO system,
 we expect user will be actively involved in requesting it for
 better their own job's performance.
@@ -86,6 +89,7 @@ For example, the first case could speedups the \textit{running phase} of
 user's application by acutely absorb the bursty checkpoint-purpose IO request;
 the second case reduce the application's waiting time via
 contracted input/output stage in the execution pipeline of application series.
+%6. Contribution summary and paper structure
 Our contributions in this paper are summarized as follows:
 \begin{enumerate}
         \item Explore how HPC workload scheduler allocates burst buffer resources.
