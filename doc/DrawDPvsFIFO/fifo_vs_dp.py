@@ -3,6 +3,7 @@
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 from bisect import bisect_left, bisect_right
 
 
@@ -28,7 +29,7 @@ def throughputPlot(prefix, delta=500.0):
                           skip_header=1, names=first_row3)
     data3 = np.genfromtxt(file_prefix + '_maxparallel.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    lines = ['b-.', 'r-.', 'g:', 'b', 'r', 'g']
+    lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
     labels = ['Plain BB', 'Max BB', 'Max #Tasks', 'Plain BB 1D']
     hatches = ['/', '\\', '-']
     all_data = [data1, data2, data3]
@@ -63,10 +64,13 @@ def throughputPlot(prefix, delta=500.0):
     ax1.set_ylim([0, 50])
     ax2.set_ylim([0, 9])
     ax2.set_yticks(np.arange(0.0, 9.6, 1.8))
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
     ax1.grid()
-
+    ax1.legend(loc='upper left', fontsize=14)
+    ax2.legend(loc='upper right', fontsize=14)
+    ax1.set_xlabel('Time Sequence / Seconds')
+    ax1.set_ylabel('#Jobs / 500 Seconds')
+    ax2.set_ylabel('Mean #Jobs')
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.grid()
     plt.savefig(prefix + '_dp_vs_fifo_throughput.eps', fmt='eps')
 
@@ -112,7 +116,7 @@ def cdfPlot(prefix, column='wait'):
     plt.figure(figure_no)
     figure_no += 1
     labels = ['Plain BB', 'Max BB', 'Max #Tasks']
-    lines = ['b-.', 'r:', 'g-.']
+    lines = ['b-', 'r:', 'g--']
     i = 0
     for data in [data1, data2, data3]:
         time = data[column]
@@ -123,6 +127,9 @@ def cdfPlot(prefix, column='wait'):
         i += 1
     plt.ylim([0, 101])
     plt.grid()
+    plt.xlabel('Time Duration / Seconds')
+    plt.ylabel('Cumulative Distribution Function / %')
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_dp_vs_fifo_%s.eps' % column, fmt='eps')
 
@@ -139,6 +146,12 @@ if __name__ == '__main__':
                   'run', 'oput', 'complete',
                   'wait', 'response']
     figure_no = 0
+    font = {'size': 16}
+    matplotlib.rc('font', **font)
+    matplotlib.rc('lines', lw=3)
     cdfPlot(file_prefix, 'response')
-    # cmpDP(file_prefix, 'response')
+    cdfPlot(file_prefix, 'wait')
+    cdfPlot(file_prefix, 'wait_in')
+    cdfPlot(file_prefix, 'wait_run')
+    cdfPlot(file_prefix, 'wait_out')
     throughputPlot(file_prefix)

@@ -3,6 +3,7 @@
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 from bisect import bisect_left, bisect_right
 
 
@@ -46,48 +47,6 @@ def utilizationPlot(prefix, column='cpu'):
     plt.savefig(prefix + '_3p_vs_1p_%s.eps' % column, format='eps')
 
 
-def timePlot(prefix, column='response'):
-    global figure_no
-    data1 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
-                          skip_header=1,
-                          names=first_row1)
-    data2 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
-                          skip_header=1, names=first_row3)
-    data3 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
-                          skip_header=1, names=first_row3)
-
-    if column in ['wait_in', 'wait_out', 'wait_run']:
-        time1 = data1['wait']
-    else:
-        time1 = data1[column]
-    time2 = data2[column]
-    time3 = data3[column]
-    time2 = [x for x in time2 if x > 10.0]
-    time3 = [x for x in time3 if x > 10.0]
-
-    sorted_time1 = np.sort(time1)
-    sorted_time2 = np.sort(time2)
-    sorted_time3 = np.sort(time3)
-
-    yvals1 = np.arange(len(sorted_time1))/float(len(sorted_time1))
-    yvals2 = np.arange(len(sorted_time2))/float(len(sorted_time2))
-    yvals3 = np.arange(len(sorted_time3))/float(len(sorted_time3))
-
-    plt.figure(figure_no)
-    figure_no += 1
-    plt.plot(sorted_time1, yvals1*100, label='1 phase BB', linewidth=3,
-             color='red', linestyle='--')
-    plt.plot(sorted_time2, yvals2*100, label='3 phase D', linewidth=3,
-             color='green', linestyle='--')
-    plt.plot(sorted_time3, yvals3*100, label='3 phase IRO', linewidth=3,
-             color='black', linestyle='--')
-    plt.ylim([0, 101])
-    plt.grid()
-    plt.legend(loc='lower right')
-    plt.savefig(prefix + '_3p_vs_1p_%s.eps' % column, format='eps')
-    # plt.show()
-
-
 def jobPlot(prefix):
     global figure_no
     data = np.loadtxt(prefix + '.swf.bb', comments=';')
@@ -128,6 +87,51 @@ def jobPlot(prefix):
     plt.savefig(prefix + '_hist.eps', format='eps')
 
 
+def timePlot(prefix, column='response'):
+    global figure_no
+    data1 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
+                          skip_header=1,
+                          names=first_row1)
+    data2 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
+                          skip_header=1, names=first_row3)
+    data3 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
+                          skip_header=1, names=first_row3)
+
+    if column in ['wait_in', 'wait_out', 'wait_run']:
+        time1 = data1['wait']
+    else:
+        time1 = data1[column]
+    time2 = data2[column]
+    time3 = data3[column]
+    time2 = [x for x in time2 if x > 10.0]
+    time3 = [x for x in time3 if x > 10.0]
+
+    sorted_time1 = np.sort(time1)
+    sorted_time2 = np.sort(time2)
+    sorted_time3 = np.sort(time3)
+
+    yvals1 = np.arange(len(sorted_time1))/float(len(sorted_time1))
+    yvals2 = np.arange(len(sorted_time2))/float(len(sorted_time2))
+    yvals3 = np.arange(len(sorted_time3))/float(len(sorted_time3))
+
+    plt.figure(figure_no)
+    figure_no += 1
+    plt.plot(sorted_time1, yvals1*100, 'b-',
+             label='1 phase BB', linewidth=3)
+    plt.plot(sorted_time2, yvals2*100, 'r-.',
+             label='3 phase D', linewidth=3)
+    plt.plot(sorted_time3, yvals3*100, 'g--',
+             label='3 phase IRO', linewidth=3)
+    plt.ylim([0, 101])
+    plt.xlabel('Time Duration / Seconds')
+    plt.ylabel('Culumative Distribution Function / %')
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+    plt.grid()
+    plt.legend(loc='lower right')
+    plt.savefig(prefix + '_3p_vs_1p_%s.eps' % column, format='eps')
+    # plt.show()
+
+
 def calculateThroughput(finish, interval):
     throughputs = []
     i = 0
@@ -144,11 +148,11 @@ def calculateThroughput(finish, interval):
 
 def throughputPlot(prefix, delta=500.0):
     global figure_no
-    data1 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
-                          skip_header=1, names=first_row3)
-    data2 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
+    data1 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
-    data3 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
+    data2 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
+                          skip_header=1, names=first_row3)
+    data3 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
     all_data = [data1, data2, data3]
     avgs = []
@@ -177,13 +181,17 @@ def throughputPlot(prefix, delta=500.0):
         ax2.bar(end + i*width, avg, width, color=lines[i+3],
                 label='Avg %s' % labels[i], hatch=hatches[i])
         i += 1
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
+    ax1.legend(loc='upper left', fontsize=14)
+    ax2.legend(loc='upper right', fontsize=14)
+    ax1.set_xlabel('Time Sequence / Seconds')
+    ax1.set_ylabel('#Jobs / 500 Seconds')
+    ax2.set_ylabel('Mean #Jobs')
     ax1.set_ylim([0, 18])
     ax2.set_ylim([0, 2.7])
     ax2.set_yticks(np.arange(0, 3.0, 0.3))
     ax1.grid()
     plt.grid()
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.savefig(prefix + '_3p_vs_1p_throughput.eps', fmt='eps')
 
 
@@ -199,9 +207,12 @@ if __name__ == '__main__':
     first_row1 = ['jid', 'submit', 'iput',
                   'run', 'oput', 'complete',
                   'wait', 'response']
+    font = {'size': 16}
+    matplotlib.rc('font', **font)
+    matplotlib.rc('lines', lw=3)
     timePlot(file_prefix, 'response')
+    timePlot(file_prefix, 'wait_in')
     timePlot(file_prefix, 'wait_run')
-    # utilizationPlot(file_prefix, 'cpu')
-    # utilizationPlot(file_prefix, 'bb')
+    timePlot(file_prefix, 'wait_out')
     jobPlot(file_prefix)
     throughputPlot(file_prefix)

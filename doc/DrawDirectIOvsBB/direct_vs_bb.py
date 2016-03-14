@@ -3,6 +3,7 @@
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 from bisect import bisect_left, bisect_right
 
 
@@ -24,12 +25,15 @@ def cdfPlot(prefix, column='response'):
     plt.figure(figure_no)
     figure_no += 1
     plt.plot(sorted_time0, yvals0*100, label='Direct IO', linewidth=3,
-             color='blue', linestyle='--')
+             color='blue', linestyle='-')
     plt.plot(sorted_time1, yvals1*100, label='BB Plain', linewidth=3,
              color='red', linestyle='--')
-    plt.legend(loc='lower right')
+    plt.legend(loc='lower right', fontsize=14)
     plt.ylim([0, 101])
+    plt.xlabel('Time Duration / Seconds')
+    plt.ylabel('Cumulative Distribution Function / %')
     plt.grid()
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps')
 
 
@@ -82,11 +86,17 @@ def throughputPlot(prefix, delta=500.0):
         ax2.bar(end + width * i, avg, width, hatch=hatches[i],
                 color=lines[i+2], label='Avg %s' % labels[i])
         i += 1
-    ax2.set_ylim([0, 3])
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
+    ax1.set_ylim([0, 14])
+    ax2.set_ylim([0, 2.8])
+    ax2.set_yticks(np.arange(0, 3.0, 0.4))
     ax1.grid()
     plt.grid()
+    ax1.legend(loc='upper left', fontsize=14)
+    ax2.legend(loc='upper right', fontsize=14)
+    ax1.set_xlabel('Time Sequence / Seconds')
+    ax1.set_ylabel('#Jobs / 500 Seconds')
+    ax2.set_ylabel('Mean #Jobs')
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.savefig(prefix + '_direct_vs_bb_throughput.eps', fmt='eps')
 
 
@@ -102,5 +112,9 @@ if __name__ == '__main__':
                   'iput', 'wait_run', 'run',
                   'wait_out', 'oput', 'complete',
                   'wait', 'response']
+    font = {'size': 16}
+    matplotlib.rc('font', **font)
+    matplotlib.rc('lines', lw=3)
     cdfPlot(file_prefix)
+    cdfPlot(file_prefix, 'wait')
     throughputPlot(file_prefix)

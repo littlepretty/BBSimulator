@@ -34,6 +34,12 @@ for example, non-volatile random-access memory (NVRAM) and solid state drive (SS
 The driver behind is these storage technologies' decreasing cost of bandwidth.
 In practice, it can suits up with DataWarp application I/O accelerator\cite{DataWarp}.
 \textit{A figure here illustrate the architecture of Burst Buffer}.
+\begin{figure*}[!t]
+        \centering
+        \includegraphics[width=6.6in]{BBArchitecture}
+        \caption{Burst Buffer Enabled IO System}
+        \label{Fig:BBArchitecture}
+\end{figure*}
 %The volume of data read/write may affect the architecture model of burst buffer.
 Burst buffer nodes on Trinity is composed of IO nodes and 2 PCIe SSD cards,
 connected via totally 16 PCIe 3.0 interfaces.

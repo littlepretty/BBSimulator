@@ -72,8 +72,15 @@ made possible due to burst buffer equipments.
 \begin{figure}[!t]
         \centering
         \includegraphics[width=3.2in]{DrawDirectIOvsBB/1000jobs_direct_vs_bb_response}
-        \caption{Application Response Time, IO Node Only vs. Burst Buffer System}
+        \caption{Job Response Time, IO Node Only vs. Burst Buffer System}
         \label{Fig:DirectIOvsBBResponse}
+\end{figure}
+
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.2in]{DrawDirectIOvsBB/1000jobs_direct_vs_bb_wait}
+        \caption{Job Wait Time, IO Node Only vs. Burst Buffer System}
+        \label{Fig:DirectIOvsBBWait}
 \end{figure}
 
 \begin{figure}[!t]
@@ -154,8 +161,27 @@ the necessity that user provides data capacity demand for each phase.
 \begin{figure}[!t]
         \centering
         \includegraphics[width=3.2in]{Draw3Pvs1P/1000jobs_3p_vs_1p_response}
-        \caption{Application Response Time, 1 Phase Model vs. 3 Phase Model}
+        \caption{Job Response Time, 1 Phase Model vs. 3 Phase Model}
         \label{Fig:3Pvs1PResponse}
+\end{figure}
+
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.2in]{Draw3Pvs1P/1000jobs_3p_vs_1p_wait_in}
+        \caption{Job Wait Input Time, 1 Phase Model vs. 3 Phase Model}
+        \label{Fig:3Pvs1PWaitIn}
+\end{figure}
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.2in]{Draw3Pvs1P/1000jobs_3p_vs_1p_wait_run}
+        \caption{Job Wait Run Time, 1 Phase Model vs. 3 Phase Model}
+        \label{Fig:3Pvs1PWaitRun}
+\end{figure}
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.2in]{Draw3Pvs1P/1000jobs_3p_vs_1p_wait_out}
+        \caption{Job Wait Output Time, 1 Phase Model vs. 3 Phase Model}
+        \label{Fig:3Pvs1PWaitOut}
 \end{figure}
 
 \begin{figure}[!t]
@@ -224,10 +250,16 @@ that is, extra 6.6\% enhancement to max-BB version.
 \begin{figure}[!t]
         \centering
         \includegraphics[width=3.2in]{DrawDPvsFIFO/1000jobs_dp_vs_fifo_response}
-        \caption{Application Response, Dynamic Programming vs. FCFS}
+        \caption{Job Response Time, Dynamic Programming vs. FCFS}
         \label{Fig:DPvsFIFOResponse}
 \end{figure}
 
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.2in]{DrawDPvsFIFO/1000jobs_dp_vs_fifo_wait_run}
+        \caption{Job Wait Run Time, Dynamic Programming vs. FCFS}
+        \label{Fig:DPvsFIFOWaitRun}
+\end{figure}
 
 \begin{figure}[!t]
         \centering
