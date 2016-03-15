@@ -121,6 +121,7 @@ def cdfPlot(prefix, column='wait'):
     for data in [data1, data2, data3]:
         time = data[column]
         sorted_time = np.sort(time)
+        logging.info('%s = %.2f' % (column, sorted_time[-1]))
         yvals = np.arange(len(sorted_time))/float(len(sorted_time))
         plt.plot(sorted_time, yvals*100, lines[i],
                  label=labels[i], linewidth=3)
@@ -131,7 +132,8 @@ def cdfPlot(prefix, column='wait'):
     plt.ylabel('Cumulative Distribution Function / %')
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.legend(loc='lower right')
-    plt.savefig(prefix + '_dp_vs_fifo_%s.eps' % column, fmt='eps')
+    plt.savefig(prefix + '_dp_vs_fifo_%s.eps' % column, fmt='eps',
+                bbox_inches='tight')
 
 
 if __name__ == '__main__':
