@@ -241,14 +241,14 @@ if __name__ == '__main__':
     data_range3 = [[1000, 60000, 1000],
                    [1000, 60000, 1000],
                    [1000, 60000, 1000]]
-    # random_data = threePhaseDifferentData(data_range3)
-    # logging.info(str(system))
-    # threePhaseSameData(random_data)
-    # logging.info(str(system))
-    # onePhaseIO(random_data)
-    # logging.info(str(system))
-    # onePhaseBurstBuffer(random_data)
-    # logging.info(str(system))
+    random_data = threePhaseDifferentData(data_range3)
+    logging.info(str(system))
+    threePhaseSameData(random_data)
+    logging.info(str(system))
+    onePhaseIO(random_data)
+    logging.info(str(system))
+    onePhaseBurstBuffer(random_data)
+    logging.info(str(system))
 
     timePlot(file_prefix, 'response')
     timePlot(file_prefix, 'wait_run')
