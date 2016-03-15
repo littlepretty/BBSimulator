@@ -3,6 +3,7 @@
 *.egg-info
 *eps-converted-to.pdf
 *.pdf
+*.graffle
 tags
 
 
