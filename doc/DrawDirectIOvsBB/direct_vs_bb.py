@@ -22,6 +22,8 @@ def cdfPlot(prefix, column='response'):
     sorted_time1 = np.sort(time1)
     yvals1 = np.arange(len(sorted_time1))/float(len(sorted_time1))
 
+    logging.info('Ratio between %s = %.2f' %
+                 (column, float(sorted_time0[-1]) / sorted_time1[-1]))
     plt.figure(figure_no)
     figure_no += 1
     plt.plot(sorted_time0, yvals0*100, label='Direct IO', linewidth=3,
@@ -34,7 +36,8 @@ def cdfPlot(prefix, column='response'):
     plt.ylabel('Cumulative Distribution Function / %')
     plt.grid()
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
-    plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps')
+    plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps',
+                bbox_inches='tight')
 
 
 def calculateThroughput(finish, interval):
