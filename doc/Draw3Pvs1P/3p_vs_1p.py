@@ -128,7 +128,8 @@ def timePlot(prefix, column='response'):
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.grid()
     plt.legend(loc='lower right')
-    plt.savefig(prefix + '_3p_vs_1p_%s.eps' % column, format='eps')
+    plt.savefig(prefix + '_3p_vs_1p_%s.eps' % column, format='eps',
+                bbox_inches='tight')
     # plt.show()
 
 
@@ -211,6 +212,7 @@ if __name__ == '__main__':
     matplotlib.rc('font', **font)
     matplotlib.rc('lines', lw=3)
     timePlot(file_prefix, 'response')
+    timePlot(file_prefix, 'wait')
     timePlot(file_prefix, 'wait_in')
     timePlot(file_prefix, 'wait_run')
     timePlot(file_prefix, 'wait_out')
