@@ -34,12 +34,6 @@ for example, non-volatile random-access memory (NVRAM) and solid state drive (SS
 The driver behind is these storage technologies' decreasing cost of bandwidth.
 In practice, it can suits up with DataWarp application I/O accelerator\cite{DataWarp}.
 \textit{A figure here illustrate the architecture of Burst Buffer}.
-\begin{figure*}[!t]
-        \centering
-        \includegraphics[width=6.6in]{BBArchitecture}
-        \caption{Burst Buffer Enabled IO System}
-        \label{Fig:BBArchitecture}
-\end{figure*}
 %The volume of data read/write may affect the architecture model of burst buffer.
 Burst buffer nodes on Trinity is composed of IO nodes and 2 PCIe SSD cards,
 connected via totally 16 PCIe 3.0 interfaces.
@@ -47,6 +41,13 @@ Alternatively, many researchers proposed to distribute burst buffer
 on multiple layers of the memory hierarchy\cite{Romanus:CORR:15}.
 For example, they may be deployed at local computer nodes, board in cabinet or IO nodes.
 We may also use burst buffer as intermediate storage system.
+
+\begin{figure*}[!t]
+        \centering
+        \includegraphics[width=6.6in]{BBArchitecture}
+        \caption{Burst Buffer Enabled IO System}
+        \label{Fig:BBArchitecture}
+\end{figure*}
 
 %4. Use cases of burst buffer
 Regardless of the specific implementation, these nodes essentially augment
@@ -81,7 +82,7 @@ As a result, it is necessary, or even urgent, to systematically manage
 the allocation of these second precious resources (secondary to compute nodes).
 This naturally falls into the responsibility of HPC workload scheduler.
 Unfortunately, existing schedulers
-either have not yet been aware to burst buffer\cite{Moab, other scheduler citation needed},
+either have not yet been aware to burst buffer\cite{Moab} %other scheduler citation needed
 or just provide very naive allocation policy\cite{SlurmBBGuide}.
 This paper tries to bridge two isolated fields of HPC architecture,
 the novel burst buffer equipped HPC IO subsystem and

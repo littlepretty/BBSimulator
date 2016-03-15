@@ -11,10 +11,10 @@ improve application performance?
 
 \subsection{Simulation Settings}
 We consider simulating the full Trinity super computer\cite{TrinitySystem}.
-The number of compute nodes on Trinity is about 18936,
-e.g. 9436 Intel Haswell nodes
+The number of compute nodes on Trinity is about 18,936,
+e.g. 9,436 Intel Haswell nodes
 and at least 9500 Intel Xeon Phi nodes.
-There are 16 cores on each processor, thus totally 302976 cores.
+There are 16 cores on each processor, thus totally 302,976 cores.
 In the following experiments, we compare two identical system except that
 IO nodes are replaced by the same number of burst buffer nodes.
 Eventually Trinity plans to delivery up to 576 burst buffer nodes of 3.7 PB,
@@ -26,8 +26,8 @@ Job trace is from ANL's Blue Gene Intrepid system
 from January to September 2009\cite{JobTrace}.
 We extract two critical fields from this jobs trace: running time and
 number of cores user requested.
-This trace contains 68936 jobs but
-only the first 1185 jobs are considered in this section's simulation.
+This trace contains 68,936 jobs but
+only the first 1,185 jobs are considered in this section's simulation.
 We patched 3 fields to each job's log entry: the amount of input data $data\_in$,
 the total amount of written data for checkpointings $data\_run$
 and the amount of output data $data\_out$.
@@ -109,24 +109,29 @@ scheduling are based on corresponding burst buffer demand in each phase.
 This suggests that user should provide burst buffer demand as granular as possible.
 
 In Figure~\ref{Fig:3Pvs1PResponse}, we plot 3 different scheduling results by 3 FCFS scheduler.
-Jobs in the first case, denoted as Direct BB, are modeled as just 1 phase because user just provides
+Jobs in the first case, denoted as Direct BB,
+are modeled as just 1 phase because user just provides
 a general burst buffer demand throughout entire application life time.
 We assume this demand is the $\max \{data\_in, data\_out, data\_run\}$.
 This is the traditional scheduling scheme except job has additional
 burst buffer demand and scheduler must subject to burst buffer capacity constraint.
 Jobs in the second and third cases have 3 phases and are scheduled by Cerberus.
-However, in the second case, denoted as Plain BB 1D, Cerberus only knows the overall burst buffer demand,
-same as the information in case 1.
-In the 3rd case, named Plain BB 3P, users kindly provided all the burst buffer demand in all 3 phases.
-This is the same case as in section~\ref{Sec:Sim:DirectIOvsBB} when we demonstrating burst buffer is beneficial.
+However, in the second case, denoted as Plain BB 1D, Cerberus only knows
+the overall burst buffer demand, same as the information in case 1.
+In the 3rd case, named Plain BB 3P,
+users kindly provided all the burst buffer demand in all 3 phases.
+This is the same case as in section~\ref{Sec:Sim:DirectIOvsBB}
+when we demonstrating burst buffer is beneficial.
 We simulate the 3 cases with the same generated random data volume.
-For 1-phase-modeled jobs, scheduler will make decision based on $\max \{data\_in, data\_out, data\_run\}$
+For 1-phase-modeled jobs, scheduler will make decision
+based on $\max \{data\_in, data\_out, data\_run\}$
 since we assume user will only tell the upper bound of its application's demand.
 However, in simulation, we use the generated data amount as the same as 3-modeled jobs.
 %Response time of system without burst buffer devices are also plotted for comparison.
 
 %Unsurprisingly, jobs' response time is improving as long as they could utilizing burst buffer.
-Let's compare scheduling results of 1-phase and 3-phase D, both of which only have rough data information of application.
+Let's compare scheduling results of 1-phase and 3-phase D,
+both of which only have rough data information of application.
 More than 60\% of the 3-phase-modeled jobs finish faster than 1-phase-modeled jobs.
 The longest 3-phase-modeled job takes 400,000 seconds to finish
 while the slowest 1-phase-modeled job needs about 540,000 seconds to finish.
@@ -137,14 +142,17 @@ throughout their lifetime.
 In contrast, each time a 3-phase-modeled job finish inputing, running or outputing,
 Cerberus will reclaim burst buffer and CPU resources.
 This gives Cerberus more opportunity to schedule the system resources.
-At last, when comparing the case of 3-phase IRO with 3-phase D, we find another advantage of our 3-phase model.
+At last, when comparing the case of 3-phase IRO with 3-phase D,
+we find another advantage of our 3-phase model.
 If benign users can provide finer-grain information of data/IO demand,
 Cerberus can programme each queue separately and get better scheduling result.
 In our simulation, when Cerberus knows more about application's demand in different phases,
 the worst absolute response time is less than 300,000 seconds.
-This is 25\% improvement to 3-phase-modeled jobs when Cerberus only knows the upper bound of data demand,
+This is 25\% improvement to 3-phase-modeled jobs
+when Cerberus only knows the upper bound of data demand,
 44\% better than the slowest 1-phase-modeled job.
-In average case, 80\% of the 3-phase-modeled jobs scheduled by Cerberus finish earlier than 1-phase-modeled jobs,
+In average case, 80\% of the 3-phase-modeled jobs scheduled by Cerberus
+finish earlier than 1-phase-modeled jobs,
 on the same condition that the same amount of burst buffer nodes are available to applications.
 Meanwhile, more than 90\% of the jobs takes less time if user specifies data usage demand
 at each phase to Cerberus.
@@ -162,8 +170,17 @@ therefore the waiting time in Figure~\ref{Fig:3Pvs1PWaitIn}~Figure~\ref{Fig:3Pvs
 are all in fact the total waiting time.
 Comparing the total waiting time shown in Figure~\ref{Fig:3Pvs1PWait}
 to waiting time in different queues,
-we see that jobs did not spend much time in either input queue or output queue.
-
+we see that jobs did not spend much time in either input queue $Q_I$ or output queue.
+To be specific, the upper bounds of time spent in input queue are
+<10\% and <20\% of the total waiting time in the case of 1-phase scheduler
+for 3-phase D and 3-phase IRO respectively;
+the upper bounds of time spent in output queue $Q_O$ are
+less than 5\% of the total waiting time of 1-phase-scheduler case
+for both 3-phases cases.
+As for the time waiting for running, the corresponding upper bound percentages
+are 30\% and 40\%.
+The difference of waiting time among 3 cases results in the different
+response performance.
 
 
 Figure~\ref{Fig:3Pvs1PThroughput} describes system throughput of these three different scenarios.
@@ -224,7 +241,6 @@ the necessity that user provides data capacity demand for each phase.
 \end{figure*}
 
 
-
 \subsection{Cerberus vs. Cerberus with Optimization}
 If we consider optimizing either burst buffer's data throughput or the parallelism across jobs,
 dynamic programming based job scheduler can further reduce jobs' wait time.
@@ -234,7 +250,8 @@ how they handle jobs in their queues (input queue, run queue, and output queue).
 The first scheduler uses naive first come first serve (FCFS) policy.
 Whoever at the front of queue are considered favorably.
 The second and third version treat jobs in run queue identically.
-They choose jobs according to the optimization solution given by Equation~\ref{Equ:MaxProductRecursion}
+They choose jobs according to the optimization solution
+given by Equation~\ref{Equ:MaxProductRecursion}
 However, they treat jobs in the input queue and output queue differently.
 The second version will select these jobs in its queue so that
 volume of to be transferred data is maximized.
