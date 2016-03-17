@@ -1,8 +1,22 @@
 \section{Related Works}
 \label{Sec:RelatedWorks}
 
-Test reference:\cite{Liu:MSST:2012}
-\cite{SlurmBBGuide}
-\cite{Romanus:CORR:15}
+I/O contention in HPC systems draws a lot of attension in the community because it is one of the major culprits for parallel applications’ performance variability \cite{hashimoto:ICNC:2012} \cite{dorier:IPDPS:2014} \cite{yildiz:IPDPS:2016}
+
+
+Hashimoto et al. evaluate the performance variability of each job when they run concurrently on the same physical computing server. They identify that network I/O sharing introduces most of the performance degradation \cite{hashimoto:ICNC:2012}.  
+Dorier et al. analyze the I/O interference between two applications. They make quantified study about performance improvement obtained by interrupting or delaying either one in order to avoid I/O contention \cite{dorier:IPDPS:2014}.
+Yildiz et al. \cite{yildiz:IPDPS:2016} explore the various root causes of I/O interference in HPC storage systems. They find that in many situations interference is a result of bad flow control in the I/O path, rather than being caused by some single bottleneck in one of its components.
+
+The solutions for alleviate I/O contention between concurrently running jobs have been proposed in recent works \cite{lofstead:sc:2010} \cite{zhou:Cluster:2015} \cite{SlurmBBGuide} \cite{Liu:MSST:2012}.
+Lofstead et al. schedule each application’s I/O request individually without a global view from system’s perspective. Their solutions require supports from specific I/O management in the system level for better results \cite{lofstead:sc:2010}. 
+Zhou et al. design a new I/O aware batch scheduler to address the I/O contention problem at batch scheduling level. The new scheduler schedules and coordinates the I/O requrests without hurting the fairness across applications \cite{zhou:Cluster:2015}. 
+Liu et al. proposed to move many file handling to the I/O nodes to ameliorate the I/O pressure from the massive number of compute nodes \cite{Liu:MSST:2012}.
+Slurm developed a new module for its batch scheduler that could allocate burst buffer resource to submitted user jobs. With pre-allocated burst buffer, I/O performance of user job can be greatly improved \cite{SlurmBBGuide} However, the way they do the resource allocation is in first-come, first-serve manner without any optimizatoin. 
+
+Our work is different from the existing research in the following ways. In our novel scheduling framework, user job can require burst buffer resource for improving its I/O operation. Job being characterized into three phases based on their I/O operation and our new scheduler, Cerberus, makes scheduling decisions for each specific phases. Cerberus is also integrated with different optimizatoin algorithms for the objectives of maximizing resource utilization and system throughput.
+
+
+% \cite{SlurmBBGuide}
 
 
