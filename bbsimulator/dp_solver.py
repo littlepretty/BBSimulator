@@ -2,15 +2,16 @@
 
 import logging
 
-BB_unit = 1000
+BB_unit = 1
 CPU_unit = 1
 
 
 class DPSolver(object):
     """dynamic programming solver for scheduling"""
-    def __init__(self):
+    def __init__(self, size=10):
         super(DPSolver, self).__init__()
         self.jobs = None
+        self.size = size
 
     def maxBurstBuffer(self, BB, demand):
         """maximize utilization of burst buffer"""
@@ -54,20 +55,20 @@ class DPSolver(object):
 
         recursiveMSIBB(N, BB)
         trackBackJobs(N, BB)
-        for job in jobs:
-            logging.debug('\t ' + str(job))
-        logging.debug('\t Maximum value is %.2f' % memo[N][BB])
+        # for job in jobs:
+            # logging.debug('\t ' + str(job))
+        # logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
     def maxStageInBurstBuffer(self, BB, all_jobs):
-        self.jobs = all_jobs
-        demand = [job.demand.data_in / BB_unit for job in self.jobs]
-        return self.maxBurstBuffer(BB / BB_unit, demand)
+        self.jobs = all_jobs[:self.size]
+        demand = [int(job.demand.data_in / BB_unit) for job in self.jobs]
+        return self.maxBurstBuffer(int(BB / BB_unit), demand)
 
     def maxStageOutBurstBuffer(self, BB, all_jobs):
-        self.jobs = all_jobs
-        demand = [job.demand.data_out / BB_unit for job in self.jobs]
-        return self.maxBurstBuffer(BB / BB_unit, demand)
+        self.jobs = all_jobs[:self.size]
+        demand = [int(job.demand.data_out / BB_unit) for job in self.jobs]
+        return self.maxBurstBuffer(int(BB / BB_unit), demand)
 
     def maxNumberTasks(self, BB, demand):
         N = len(demand)
@@ -110,22 +111,22 @@ class DPSolver(object):
 
         recursiveMSIPJ(N, BB)
         trackBackJobs(N, BB)
-        for job in jobs:
-            logging.debug('\t ' + str(job))
-        logging.debug('\t Maximum value is %.2f' % memo[N][BB])
+        # for job in jobs:
+            # logging.debug('\t ' + str(job))
+        # logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
     def maxStageInParallelJobs(self, BB, all_jobs):
         """maximize number of runnable tasks"""
-        self.jobs = all_jobs
-        demand = [job.demand.data_in / BB_unit for job in self.jobs]
-        return self.maxNumberTasks(BB / BB_unit, demand)
+        self.jobs = all_jobs[:self.size]
+        demand = [int(job.demand.data_in / BB_unit) for job in self.jobs]
+        return self.maxNumberTasks(int(BB / BB_unit), demand)
 
     def maxStageOutParallelJobs(self, BB, all_jobs):
         """maximize number of runnable tasks"""
-        self.jobs = all_jobs
-        demand = [job.demand.data_out / BB_unit for job in self.jobs]
-        return self.maxNumberTasks(BB / BB_unit, demand)
+        self.jobs = all_jobs[:self.size]
+        demand = [int(job.demand.data_out / BB_unit) for job in self.jobs]
+        return self.maxNumberTasks(int(BB / BB_unit), demand)
 
     def maxRunningCpuBBProduct(self, CPU, BB, cpu_demand, bb_demand):
         """maximize utilization of (cpu, burst buffer) pair"""
@@ -177,16 +178,16 @@ class DPSolver(object):
 
         recursiveRCB(N, CPU, BB)
         trackBackJobs(N, CPU, BB)
-        for job in jobs:
-            logging.debug('\t ' + str(job))
-        logging.debug('\t Maximum value is %.2f' % memo[N][CPU][BB])
+        # for job in jobs:
+            # logging.debug('\t ' + str(job))
+        # logging.debug('\t Maximum value is %.2f' % memo[N][CPU][BB])
         return jobs
 
     def maxRunningCpuBb(self, CPU, BB, all_jobs):
-        self.jobs = all_jobs
-        cpu_demand = [job.demand.num_core / CPU_unit for job in self.jobs]
-        bb_demand = [job.demand.data_run / BB_unit for job in self.jobs]
+        self.jobs = all_jobs[:self.size]
+        cpu_demand = [int(job.demand.num_core / CPU_unit) for job in self.jobs]
+        bb_demand = [int(job.demand.data_run / BB_unit) for job in self.jobs]
         return self.maxRunningCpuBBProduct(int(CPU / CPU_unit),
-                                           BB / BB_unit,
+                                           int(BB / BB_unit),
                                            cpu_demand,
                                            bb_demand)

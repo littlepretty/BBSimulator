@@ -209,22 +209,22 @@ if __name__ == '__main__':
                   'run', 'oput', 'complete',
                   'wait', 'response']
     figure_no = 0
-    trace_reader = BBTraceReader(file_prefix + '.swf', lam=10)
-    data_range = [[1000, 10000, 1000],
-                  [1000, 10000, 1000],
-                  [1000, 10000, 1000]]
+    trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
+    data_range = [[1, 60, 1],
+                  [1, 60, 1],
+                  [1, 60, 1]]
     data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
 
-    cpu = BBCpu(300000, 8, 2.5)
-    bb = BBBurstBuffer(4000000, 8, 1)
-    io = BBIo(2.5, 1)
+    cpu = BBCpu(300000, 0.008, 0.0025)
+    bb = BBBurstBuffer(4000, 0.008, 0.001)
+    io = BBIo(0.0025, 0.001)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
     runPlainBBScheduler()
-    # runMaxParallelScheduler()
-    runMaxBBScheduler()
+    runMaxParallelScheduler()
+    # runMaxBBScheduler()
     # threePhaseSameData(data)
     # onePhaseIO(data)
     # onePhaseBurstBuffer(data)
-    cdfPlot(file_prefix, 'response')
-    throughputPlot(file_prefix)
+    # cdfPlot(file_prefix, 'response')
+    # throughputPlot(file_prefix)
