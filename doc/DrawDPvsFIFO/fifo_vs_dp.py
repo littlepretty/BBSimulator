@@ -30,7 +30,7 @@ def throughputPlot(prefix, delta=500.0):
     data3 = np.genfromtxt(file_prefix + '_maxparallel.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
     lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
-    labels = ['Plain BB', 'Max BB', 'Max #Tasks', 'Plain BB 1D']
+    labels = ['FCFS BB', 'Max BB', 'Max #Tasks', 'FCFS BB 1D']
     hatches = ['/', '\\', '-']
     all_data = [data1, data2, data3]
     avgs = []
@@ -38,7 +38,7 @@ def throughputPlot(prefix, delta=500.0):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     figure_no += 1
-    width = 10000
+    width = 28000
     end = -1
     for data in all_data:
         finish = data['complete']
@@ -47,6 +47,7 @@ def throughputPlot(prefix, delta=500.0):
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
         throughputs = calculateThroughput(finish, intervals)
+        logging.info('Max throughput = %.3f' % np.max(throughputs))
         avgs.append(np.mean(throughputs))
 
         ax1.plot(intervals[1:], throughputs, lines[i],
@@ -54,16 +55,17 @@ def throughputPlot(prefix, delta=500.0):
         i += 1
         end = max(end, intervals[-1])
     i = 0
-    end += 10000
+    end += 50000
     for avg in avgs:
         logging.info('Avg Throughput %s = %.3f' % (labels[i], avg))
         ax2.bar(end + width * i, avg, width, hatch=hatches[i],
                 color=lines[i+3], label='Avg %s' % labels[i])
         i += 1
 
-    ax1.set_ylim([0, 50])
-    ax2.set_ylim([0, 9])
-    ax2.set_yticks(np.arange(0.0, 9.6, 1.8))
+    ax1.set_ylim([0, 21])
+    ax1.set_yticks(np.arange(0.0, 21.1, 4.2))
+    ax2.set_ylim([0, 3.0])
+    ax2.set_yticks(np.arange(0.0, 3.1, 0.6))
     ax1.grid()
     ax1.legend(loc='upper left', fontsize=14)
     ax2.legend(loc='upper right', fontsize=14)
@@ -115,7 +117,7 @@ def cdfPlot(prefix, column='wait'):
                           skip_header=1, names=first_row3)
     plt.figure(figure_no)
     figure_no += 1
-    labels = ['Plain BB', 'Max BB', 'Max #Tasks']
+    labels = ['FCFS BB', 'Max BB', 'Max #Tasks']
     lines = ['b-', 'r:', 'g--']
     i = 0
     for data in [data1, data2, data3]:
