@@ -9,7 +9,7 @@ from bisect import bisect_left, bisect_right
 
 def cdfPlot(prefix, column='response'):
     global figure_no
-    data0 = np.genfromtxt(prefix + '_direct.out.csv', delimiter=',',
+    data0 = np.genfromtxt(prefix + '_1pio.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
     data1 = np.genfromtxt(prefix + '_plain.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
@@ -56,7 +56,7 @@ def calculateThroughput(finish, interval):
 
 def throughputPlot(prefix, delta=500.0):
     global figure_no
-    data1 = np.genfromtxt(prefix + '_direct.out.csv', delimiter=',',
+    data1 = np.genfromtxt(prefix + '_1pio.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
     data2 = np.genfromtxt(file_prefix + '_plain.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
@@ -83,17 +83,18 @@ def throughputPlot(prefix, delta=500.0):
                  label=labels[i], linewidth=3)
         i += 1
     i = 0
-    end += 15000
+    end += 180000
     for avg in avgs:
         logging.info('Avg Throughput %s = %.3f' % (labels[i], avg))
         ax2.bar(end + width * i, avg, width, hatch=hatches[i],
                 color=lines[i+2], label='Avg %s' % labels[i])
         i += 1
-    ax1.set_ylim([0, 14])
-    ax2.set_ylim([0, 2.8])
-    ax2.set_yticks(np.arange(0, 3.0, 0.4))
+    ax1.set_ylim([0, 18])
+    ax2.set_ylim([0, 2.7])
+    ax2.set_yticks(np.arange(0, 2.8, 0.3))
     ax1.grid()
     plt.grid()
+    plt.xlim([0, 1800000])
     ax1.legend(loc='upper left', fontsize=14)
     ax2.legend(loc='upper right', fontsize=14)
     ax1.set_xlabel('Time Sequence / Seconds')
