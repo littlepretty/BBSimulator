@@ -105,6 +105,9 @@ class BBTraceReader(object):
         data_in = row[18]
         data_run = row[19]
         data_out = row[20]
+
+        if num_core < 256:
+            num_core = 256
         demand = BBJobDemand(num_core, data_in, data_run, data_out)
         job = BBJob(job_id, submit, demand, runtime)
 

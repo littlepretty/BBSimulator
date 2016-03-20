@@ -12,6 +12,7 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 from bisect import bisect_left, bisect_right
+import time
 
 
 def threePhaseSameData(data):
@@ -64,7 +65,10 @@ def runMaxBBScheduler():
     bb_scheduler = BBSchedulerMaxBurstBuffer(system)
     bb_simulator.setScheduler(bb_scheduler)
     bb_jobs = trace_reader.generateJobs()
+    start = time.clock()
     bb_simulator.simulate(bb_jobs)
+    logging.info('Simulation Max BB time = %.2f seconds' %
+                 (time.clock() - start))
     bb_scheduler.outputJobSummary(file_prefix + '_maxbb.out.csv')
     bb_simulator.dumpSystemStatistics(file_prefix + '_maxbb.usg.csv')
 
@@ -74,7 +78,10 @@ def runMaxParallelScheduler():
     bb_scheduler = BBSchedulerMaxParallel(system)
     bb_simulator.setScheduler(bb_scheduler)
     bb_jobs = trace_reader.generateJobs()
+    start = time.clock()
     bb_simulator.simulate(bb_jobs)
+    logging.info('Simulation Max #Task time = %.2f seconds' %
+                 (time.clock() - start))
     bb_scheduler.outputJobSummary(file_prefix + '_maxparallel.out.csv')
     bb_simulator.dumpSystemStatistics(file_prefix + '_maxparallel.usg.csv')
 
@@ -101,12 +108,19 @@ def throughputPlot(prefix, delta=500.0):
                           skip_header=1, names=first_row1)
     data3 = np.genfromtxt(file_prefix + '_maxbb.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
+    data4 = np.genfromtxt(file_prefix + '_1pio.out.csv', delimiter=',',
+                          skip_header=1, names=first_row1)
+    data5 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
+                          skip_header=1, names=first_row1)
+    data6 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
+                          skip_header=1, names=first_row3)
     lines = ['b-.', 'r-.', 'g:', 'c--', 'm-.', 'y:']
-    labels = ['Plain BB', 'Max #Tasks', 'Max BB']
+    labels = ['FCFS BB', 'Max #Tasks', 'Max BB',
+              'Direct IO', '1P BB', 'FCFS BB 3D']
     i = 0
     plt.figure(figure_no)
     figure_no += 1
-    for data in [data1, data2, data3]:
+    for data in [data1, data2, data3, data4, data5, data6]:
         finish = data['complete']
         finish = np.sort(finish)
         latest_finish = finish.max()
@@ -115,20 +129,26 @@ def throughputPlot(prefix, delta=500.0):
         plt.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
-    plt.xlim([0, 50000])
+    # plt.xlim([0, 50000])
     plt.legend(loc='upper right')
     plt.savefig(prefix + '_dp_vs_fifo_throughput.eps', fmt='eps')
 
 
 def cmpDP(prefix, column='response'):
     global figure_no
+    data1 = np.genfromtxt(prefix + '_plain.out.csv', delimiter=',',
+                          skip_header=1, names=first_row3)
     data2 = np.genfromtxt(prefix + '_maxparallel.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
     data3 = np.genfromtxt(prefix + '_maxbb.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
 
+    time1 = data1[column]
     time2 = data2[column]
     time3 = data3[column]
+
+    sorted_time1 = np.sort(time1)
+    yvals1 = np.arange(len(sorted_time1))/float(len(sorted_time1))
 
     sorted_time2 = np.sort(time2)
     yvals2 = np.arange(len(sorted_time2))/float(len(sorted_time2))
@@ -138,8 +158,9 @@ def cmpDP(prefix, column='response'):
 
     plt.figure(figure_no)
     figure_no += 1
-    plt.plot(sorted_time2, yvals2*100, 'r-.', label='maxbb', linewidth=3)
-    plt.plot(sorted_time3, yvals3*100, 'g:', label='maxpar', linewidth=3)
+    plt.plot(sorted_time1, yvals1*100, 'b-.', label='Direct IO', linewidth=3)
+    plt.plot(sorted_time2, yvals2*100, 'r-.', label='Max BB', linewidth=3)
+    plt.plot(sorted_time3, yvals3*100, 'g:', label='Max #Tasks', linewidth=3)
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_maxbb_vs_maxpara_%s.eps' % column, fmt='eps')
 
@@ -186,12 +207,12 @@ def cdfPlot(prefix, column='wait'):
 
     plt.figure(figure_no)
     figure_no += 1
-    plt.plot(sorted_time1, yvals1*100, 'b--', label='Plain BB', linewidth=3)
+    plt.plot(sorted_time1, yvals1*100, 'b--', label='FCFS BB IRO', linewidth=3)
     plt.plot(sorted_time2, yvals2*100, 'g:', label='Max #Tasks', linewidth=3)
     plt.plot(sorted_time3, yvals3*100, 'r-.', label='Max BB', linewidth=3)
     plt.plot(sorted_time4, yvals4*100, 'y-', label='Direct IO', linewidth=3)
-    plt.plot(sorted_time5, yvals5*100, 'm-.', label='Direct BB', linewidth=3)
-    plt.plot(sorted_time6, yvals6*100, 'c:', label='Plain/BB D', linewidth=3)
+    plt.plot(sorted_time5, yvals5*100, 'm-.', label='1P BB', linewidth=3)
+    plt.plot(sorted_time6, yvals6*100, 'c:', label='FCFS BB 3D', linewidth=3)
     # plt.xlim([0, 100000])
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_dp_vs_fifo_%s.eps' % column, fmt='eps')
@@ -220,11 +241,14 @@ if __name__ == '__main__':
     io = BBIo(0.0025, 0.001)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
-    runPlainBBScheduler()
-    runMaxParallelScheduler()
+    # runPlainBBScheduler()
+    # runMaxParallelScheduler()
     # runMaxBBScheduler()
     # threePhaseSameData(data)
     # onePhaseIO(data)
     # onePhaseBurstBuffer(data)
-    # cdfPlot(file_prefix, 'response')
-    # throughputPlot(file_prefix)
+    cdfPlot(file_prefix, 'response')
+    cdfPlot(file_prefix, 'wait')
+    cmpDP(file_prefix, 'response')
+    cmpDP(file_prefix, 'wait')
+    throughputPlot(file_prefix)

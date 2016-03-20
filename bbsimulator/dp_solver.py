@@ -3,7 +3,7 @@
 import logging
 
 BB_unit = 1
-CPU_unit = 1
+CPU_unit = 256
 
 
 class DPSolver(object):
@@ -30,7 +30,7 @@ class DPSolver(object):
 
         def trackBackJobs(i, w):
             """return a optimal solution for 0-1 knapsack problem"""
-            if i <= 0:
+            if i == 0:
                 return
             if demand[i-1] <= w:
                 if memo[i-1][w - demand[i-1]] + demand[i-1] >= memo[i-1][w]:
@@ -43,6 +43,9 @@ class DPSolver(object):
 
         fillInMemo()
         trackBackJobs(N, BB)
+        for job in jobs:
+            logging.debug('\t ' + str(job))
+        logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
     def maxBurstBuffer(self, BB, demand):
@@ -87,8 +90,7 @@ class DPSolver(object):
 
         recursiveMSIBB(N, BB)
         trackBackJobs(N, BB)
-        # for job in jobs:
-            # logging.debug('\t ' + str(job))
+        # for job in jobs:logging.debug('\t ' + str(job))
         # logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
@@ -119,10 +121,10 @@ class DPSolver(object):
 
         def trackBackJobs(i, w):
             """return a optimal solution for 0-1 knapsack problem"""
-            if i <= 0:
+            if i == 0:
                 return
             if demand[i-1] <= w:
-                if memo[i-1][w - demand[i-1]] + demand[i-1] >= memo[i-1][w]:
+                if memo[i-1][w - demand[i-1]] + 1 >= memo[i-1][w]:
                     jobs.append(self.jobs[i-1])
                     trackBackJobs(i - 1, w - demand[i-1])
                 else:
@@ -132,6 +134,9 @@ class DPSolver(object):
 
         fillInMemo()
         trackBackJobs(N, BB)
+        for job in jobs:
+            logging.debug('\t ' + str(job))
+        logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
     def maxNumberTasks(self, BB, demand):
@@ -175,8 +180,7 @@ class DPSolver(object):
 
         recursiveMSIPJ(N, BB)
         trackBackJobs(N, BB)
-        # for job in jobs:
-            # logging.debug('\t ' + str(job))
+        # for job in jobs:logging.debug('\t ' + str(job))
         # logging.debug('\t Maximum value is %.2f' % memo[N][BB])
         return jobs
 
@@ -194,9 +198,11 @@ class DPSolver(object):
 
     def maxCpuBBProductIterative(self, CPU, BB, cpu_demand, bb_demand):
         N = len(cpu_demand)
-        memo = [[[0 for _ in range(0, BB+1)]
-                 for _ in range(0, CPU+1)]
-                for _ in range(0, N+1)]
+        memo = [None] * (N+1)
+        for i in range(0, N+1):
+            memo[i] = [None] * (CPU+1)
+            for j in range(0, CPU+1):
+                memo[i][j] = [0] * (BB+1)
         jobs = []
 
         def fillInMemo():
@@ -205,8 +211,9 @@ class DPSolver(object):
                     for w in range(0, BB+1):
                         if c >= cpu_demand[i-1] and w >= bb_demand[i-1]:
                             dp1 = memo[i-1][c][w]
-                            dp2 = memo[i-1][c-cpu_demand[i-1]][w-bb_demand[i-1]] \
-                                + cpu_demand[i-1]*bb_demand[i-1]
+                            dp2 = \
+                                memo[i-1][c-cpu_demand[i-1]][w-bb_demand[i-1]] \
+                                + cpu_demand[i-1] * bb_demand[i-1]
                             memo[i][c][w] = max(dp1, dp2)
                         else:
                             memo[i][c][w] = memo[i-1][c][w]
@@ -217,7 +224,7 @@ class DPSolver(object):
                 return
             if cpu_demand[i-1] <= c and bb_demand[i-1] <= w:
                 if memo[i-1][c - cpu_demand[i-1]][w - bb_demand[i-1]] \
-                        + 1 >= memo[i-1][c][w]:
+                        + cpu_demand[i-1] * bb_demand[i-1] >= memo[i-1][c][w]:
                     jobs.append(self.jobs[i-1])
                     trackBackJobs(i - 1, c - cpu_demand[i-1],
                                   w - bb_demand[i-1])
@@ -228,6 +235,9 @@ class DPSolver(object):
 
         fillInMemo()
         trackBackJobs(N, CPU, BB)
+        for job in jobs:
+            logging.debug('\t ' + str(job))
+        logging.debug('\t Maximum value is %.2f' % memo[N][CPU][BB])
         return jobs
 
     def maxCpuBBProduct(self, CPU, BB, cpu_demand, bb_demand):
@@ -269,7 +279,7 @@ class DPSolver(object):
                 return
             if cpu_demand[i-1] <= c and bb_demand[i-1] <= w:
                 if memo[i-1][c - cpu_demand[i-1]][w - bb_demand[i-1]] \
-                        + 1 >= memo[i-1][c][w]:
+                        + cpu_demand[i-1] * bb_demand[i-1] >= memo[i-1][c][w]:
                     jobs.append(self.jobs[i-1])
                     trackBackJobs(i - 1, c - cpu_demand[i-1],
                                   w - bb_demand[i-1])
@@ -280,8 +290,7 @@ class DPSolver(object):
 
         recursiveRCB(N, CPU, BB)
         trackBackJobs(N, CPU, BB)
-        # for job in jobs:
-            # logging.debug('\t ' + str(job))
+        # for job in jobs:logging.debug('\t ' + str(job))
         # logging.debug('\t Maximum value is %.2f' % memo[N][CPU][BB])
         return jobs
 
