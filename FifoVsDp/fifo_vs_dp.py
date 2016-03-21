@@ -241,9 +241,9 @@ if __name__ == '__main__':
     io = BBIo(0.0025, 0.001)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
-    # runPlainBBScheduler()
-    # runMaxParallelScheduler()
-    # runMaxBBScheduler()
+    runPlainBBScheduler()
+    runMaxParallelScheduler()
+    runMaxBBScheduler()
     # threePhaseSameData(data)
     # onePhaseIO(data)
     # onePhaseBurstBuffer(data)
