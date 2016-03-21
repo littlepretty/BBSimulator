@@ -15,6 +15,10 @@ def cdfPlot(prefix, column='response'):
                           skip_header=1, names=first_row3)
     time0 = data0[column]
     time1 = data1[column]
+    complete0 = data0['complete'][-1]
+    complete1 = data1['complete'][-1]
+    logging.info('Direct IO complete at %.2f' % complete0)
+    logging.info('Plain BB complete at %.2f' % complete1)
 
     sorted_time0 = np.sort(time0)
     yvals0 = np.arange(len(sorted_time0))/float(len(sorted_time0))
@@ -24,11 +28,12 @@ def cdfPlot(prefix, column='response'):
 
     logging.info('Ratio between %s = %.2f' %
                  (column, float(sorted_time0[-1]) / sorted_time1[-1]))
+    logging.info('Longest %2f : %.2f' % (sorted_time0[-1], sorted_time1[-1]))
     plt.figure(figure_no)
     figure_no += 1
     plt.plot(sorted_time0, yvals0*100, label='Direct IO', linewidth=3,
              color='blue', linestyle='-')
-    plt.plot(sorted_time1, yvals1*100, label='BB Plain', linewidth=3,
+    plt.plot(sorted_time1, yvals1*100, label='Plain BB', linewidth=3,
              color='red', linestyle='--')
     plt.legend(loc='lower right', fontsize=14)
     plt.ylim([0, 101])
