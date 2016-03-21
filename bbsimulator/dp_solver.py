@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import logging
+import time
+
 
 BB_unit = 1
 CPU_unit = 256
@@ -12,6 +14,8 @@ class DPSolver(object):
         super(DPSolver, self).__init__()
         self.jobs = None
         self.size = size
+        self.runtime = 0
+        self.runs = 0
 
     def maxBurstBufferIterative(self, BB, demand):
         N = len(demand)
@@ -98,13 +102,21 @@ class DPSolver(object):
         size = min(len(all_jobs), self.size)
         self.jobs = all_jobs[:size]
         demand = [int(job.demand.data_in / BB_unit) for job in self.jobs]
-        return self.maxBurstBufferIterative(int(BB / BB_unit), demand)
+        self.runs += 1
+        start = time.clock()
+        choices = self.maxBurstBufferIterative(int(BB / BB_unit), demand)
+        self.runtime += time.clock() - start
+        return choices
 
     def maxStageOutBurstBuffer(self, BB, all_jobs):
         size = min(len(all_jobs), self.size)
         self.jobs = all_jobs[:size]
         demand = [int(job.demand.data_out / BB_unit) for job in self.jobs]
-        return self.maxBurstBufferIterative(int(BB / BB_unit), demand)
+        self.runs += 1
+        start = time.clock()
+        choices = self.maxBurstBufferIterative(int(BB / BB_unit), demand)
+        self.runtime += time.clock() - start
+        return choices
 
     def maxNumberTasksIterative(self, BB, demand):
         N = len(demand)
@@ -191,14 +203,22 @@ class DPSolver(object):
         size = min(len(all_jobs), self.size)
         self.jobs = all_jobs[:size]
         demand = [int(job.demand.data_in / BB_unit) for job in self.jobs]
-        return self.maxNumberTasksIterative(int(BB / BB_unit), demand)
+        self.runs += 1
+        start = time.clock()
+        choices = self.maxNumberTasksIterative(int(BB / BB_unit), demand)
+        self.runtime += time.clock() - start
+        return choices
 
     def maxStageOutParallelJobs(self, BB, all_jobs):
         """maximize number of runnable tasks"""
         size = min(len(all_jobs), self.size)
         self.jobs = all_jobs[:size]
         demand = [int(job.demand.data_out / BB_unit) for job in self.jobs]
-        return self.maxNumberTasksIterative(int(BB / BB_unit), demand)
+        self.runs += 1
+        start = time.clock()
+        choices = self.maxNumberTasksIterative(int(BB / BB_unit), demand)
+        self.runtime += time.clock() - start
+        return choices
 
     def maxCpuBBProductIterative(self, CPU, BB, cpu_demand, bb_demand):
         N = len(cpu_demand)
@@ -303,6 +323,14 @@ class DPSolver(object):
         self.jobs = all_jobs[:size]
         cpu_demand = [int(job.demand.num_core / CPU_unit) for job in self.jobs]
         bb_demand = [int(job.demand.data_run / BB_unit) for job in self.jobs]
-        return self.maxCpuBBProductIterative(int(CPU / CPU_unit),
-                                             int(BB / BB_unit),
-                                             cpu_demand, bb_demand)
+        self.runs += 1
+        start = time.clock()
+        choices = self.maxCpuBBProductIterative(int(CPU / CPU_unit),
+                                                int(BB / BB_unit),
+                                                cpu_demand, bb_demand)
+        self.runtime += time.clock() - start
+        return choices
+
+    def __del__(self):
+        logging.info('Runtime / Runs = %.2f / %.2f = %.2f' %
+                     (self.runtime, self.runs, self.runtime / self.runs))
