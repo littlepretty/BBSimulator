@@ -17,7 +17,7 @@ def utilizationPlot(prefix, column='cpu'):
                           names=['time', 'cpu', 'bb'])
     data2 = np.genfromtxt(prefix + '_3p_same.usg.csv', delimiter=',',
                           skip_header=1, names=['time', 'cpu', 'bb'])
-    data3 = np.genfromtxt(prefix + '_3p_diff.usg.csv', delimiter=',',
+    data3 = np.genfromtxt(prefix + '_plain.usg.csv', delimiter=',',
                           skip_header=1, names=['time', 'cpu', 'bb'])
     x0 = data0['time']
     x1 = data1['time']
@@ -94,7 +94,7 @@ def timePlot(prefix, column='response'):
                           names=first_row1)
     data2 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    data3 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
+    data3 = np.genfromtxt(prefix + '_plain.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
 
     if column in ['wait_in', 'wait_out', 'wait_run']:
@@ -153,14 +153,14 @@ def throughputPlot(prefix, delta=500.0):
                           skip_header=1, names=first_row1)
     data2 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
-    data3 = np.genfromtxt(prefix + '_3p_diff.out.csv', delimiter=',',
+    data3 = np.genfromtxt(prefix + '_plain.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
     all_data = [data1, data2, data3]
     avgs = []
     lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
-    labels = ['Direct BB', 'Plain BB 1D', 'Plain BB 3P']
+    labels = ['Direct BB', 'FCFS BB 1D', 'FCFS BB 3P']
     hatches = ['/', '\\', '-']
-    width = 20000
+    width = 28000
     i = 0
     end = -1
     fig, ax1 = plt.subplots()
@@ -176,6 +176,7 @@ def throughputPlot(prefix, delta=500.0):
                  label=labels[i], linewidth=3)
         i += 1
     i = 0
+    end += 20000
     ax2 = ax1.twinx()
     for avg in avgs:
         logging.info('Avg Throughput of %s = %.3f' % (labels[i], avg))

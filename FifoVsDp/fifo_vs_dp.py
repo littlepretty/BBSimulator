@@ -105,9 +105,9 @@ def throughputPlot(prefix, delta=500.0):
     data1 = np.genfromtxt(prefix + '_plain.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
     data2 = np.genfromtxt(file_prefix + '_maxparallel.out.csv', delimiter=',',
-                          skip_header=1, names=first_row1)
+                          skip_header=1, names=first_row3)
     data3 = np.genfromtxt(file_prefix + '_maxbb.out.csv', delimiter=',',
-                          skip_header=1, names=first_row1)
+                          skip_header=1, names=first_row3)
     data4 = np.genfromtxt(file_prefix + '_1pio.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
     data5 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
@@ -126,6 +126,8 @@ def throughputPlot(prefix, delta=500.0):
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
         throughputs = calculateThroughput(finish, intervals)
+        logging.info('Avg throughputs = %.2f', np.mean(throughputs))
+        logging.info('Max throughputs = %.2f', np.max(throughputs))
         plt.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
@@ -230,16 +232,16 @@ if __name__ == '__main__':
                   'run', 'oput', 'complete',
                   'wait', 'response']
     figure_no = 0
-    trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    data_range = [[1, 60, 1],
-                  [1, 60, 1],
-                  [1, 60, 1]]
-    data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
+    # trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
+    # data_range = [[1, 60, 1],
+                  # [1, 60, 1],
+                  # [1, 60, 1]]
+    # data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
 
-    cpu = BBCpu(300000, 0.008, 0.0025)
-    bb = BBBurstBuffer(4000, 0.008, 0.001)
-    io = BBIo(0.0025, 0.001)
-    system = BBSystemBurstBuffer(cpu, bb, io)
+    # cpu = BBCpu(300000, 0.008, 0.0025)
+    # bb = BBBurstBuffer(4000, 0.008, 0.001)
+    # io = BBIo(0.0025, 0.001)
+    # system = BBSystemBurstBuffer(cpu, bb, io)
 
     runPlainBBScheduler()
     runMaxParallelScheduler()
