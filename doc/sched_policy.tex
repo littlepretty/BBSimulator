@@ -1,4 +1,4 @@
-\section{3-Phase Scheduler}
+\section{Cerberus and Optimization Enhancement}
 \label{Sec:Scheduler}
 
 Traditional batch scheduler just looks at the field of $c_i$ when making scheduling decision,
@@ -14,9 +14,16 @@ The stage-out set $Q_O$ contains all the jobs that needs to write output data to
 At anytime, a job can only appear in one of the 3 sets, apparently.
 This fact motivates separated scheduling idiom to be used in different phases, or for different job sets/queues.
 
+%\begin{figure}[!t]
+        %\centering
+        %\includegraphics[width=3.6in]{CerberusQueues}
+        %\caption{Scheduling Process of Burst Buffer Aware Cerberus}
+        %\label{Fig:CerberusQueues}
+%\end{figure}
+
 \begin{figure}[!t]
         \centering
-        \includegraphics[width=3.6in]{CerberusQueues}
+        \includegraphics[width=3.6in]{CerberusBBSystem}
         \caption{Scheduling Process of Burst Buffer Aware Cerberus}
         \label{Fig:CerberusQueues}
 \end{figure}
