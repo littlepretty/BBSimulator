@@ -8,7 +8,7 @@ CPU_unit = 256
 
 class DPSolver(object):
     """dynamic programming solver for scheduling"""
-    def __init__(self, size=10):
+    def __init__(self, size=30):
         super(DPSolver, self).__init__()
         self.jobs = None
         self.size = size
@@ -95,12 +95,14 @@ class DPSolver(object):
         return jobs
 
     def maxStageInBurstBuffer(self, BB, all_jobs):
-        self.jobs = all_jobs[:self.size]
+        size = min(len(all_jobs), self.size)
+        self.jobs = all_jobs[:size]
         demand = [int(job.demand.data_in / BB_unit) for job in self.jobs]
         return self.maxBurstBufferIterative(int(BB / BB_unit), demand)
 
     def maxStageOutBurstBuffer(self, BB, all_jobs):
-        self.jobs = all_jobs[:self.size]
+        size = min(len(all_jobs), self.size)
+        self.jobs = all_jobs[:size]
         demand = [int(job.demand.data_out / BB_unit) for job in self.jobs]
         return self.maxBurstBufferIterative(int(BB / BB_unit), demand)
 
@@ -186,13 +188,15 @@ class DPSolver(object):
 
     def maxStageInParallelJobs(self, BB, all_jobs):
         """maximize number of runnable tasks"""
-        self.jobs = all_jobs[:self.size]
+        size = min(len(all_jobs), self.size)
+        self.jobs = all_jobs[:size]
         demand = [int(job.demand.data_in / BB_unit) for job in self.jobs]
         return self.maxNumberTasksIterative(int(BB / BB_unit), demand)
 
     def maxStageOutParallelJobs(self, BB, all_jobs):
         """maximize number of runnable tasks"""
-        self.jobs = all_jobs[:self.size]
+        size = min(len(all_jobs), self.size)
+        self.jobs = all_jobs[:size]
         demand = [int(job.demand.data_out / BB_unit) for job in self.jobs]
         return self.maxNumberTasksIterative(int(BB / BB_unit), demand)
 
@@ -295,7 +299,8 @@ class DPSolver(object):
         return jobs
 
     def maxRunningCpuBb(self, CPU, BB, all_jobs):
-        self.jobs = all_jobs[:self.size]
+        size = min(len(all_jobs), self.size)
+        self.jobs = all_jobs[:size]
         cpu_demand = [int(job.demand.num_core / CPU_unit) for job in self.jobs]
         bb_demand = [int(job.demand.data_run / BB_unit) for job in self.jobs]
         return self.maxCpuBBProductIterative(int(CPU / CPU_unit),
