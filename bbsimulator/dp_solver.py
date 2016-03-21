@@ -8,7 +8,7 @@ CPU_unit = 256
 
 class DPSolver(object):
     """dynamic programming solver for scheduling"""
-    def __init__(self, size=30):
+    def __init__(self, size=10):
         super(DPSolver, self).__init__()
         self.jobs = None
         self.size = size

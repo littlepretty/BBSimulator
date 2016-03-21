@@ -55,7 +55,10 @@ def runPlainBBScheduler():
     bb_scheduler = BBSchedulerCerberus(system)
     bb_simulator.setScheduler(bb_scheduler)
     bb_jobs = trace_reader.generateJobs()
+    start = time.clock()
     bb_simulator.simulate(bb_jobs)
+    logging.info('Simulation FCFS time = %.2f seconds' %
+                 (time.clock() - start))
     bb_scheduler.outputJobSummary(file_prefix + '_plain.out.csv')
     bb_simulator.dumpSystemStatistics(file_prefix + '_plain.usg.csv')
 
@@ -232,16 +235,16 @@ if __name__ == '__main__':
                   'run', 'oput', 'complete',
                   'wait', 'response']
     figure_no = 0
-    # trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    # data_range = [[1, 60, 1],
-                  # [1, 60, 1],
-                  # [1, 60, 1]]
-    # data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
+    trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
+    data_range = [[1, 60, 1],
+                  [1, 60, 1],
+                  [1, 60, 1]]
+    data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
 
-    # cpu = BBCpu(300000, 0.008, 0.0025)
-    # bb = BBBurstBuffer(4000, 0.008, 0.001)
-    # io = BBIo(0.0025, 0.001)
-    # system = BBSystemBurstBuffer(cpu, bb, io)
+    cpu = BBCpu(300000, 0.008, 0.0025)
+    bb = BBBurstBuffer(4000, 0.008, 0.001)
+    io = BBIo(0.0025, 0.001)
+    system = BBSystemBurstBuffer(cpu, bb, io)
 
     runPlainBBScheduler()
     runMaxParallelScheduler()
@@ -249,8 +252,8 @@ if __name__ == '__main__':
     # threePhaseSameData(data)
     # onePhaseIO(data)
     # onePhaseBurstBuffer(data)
-    cdfPlot(file_prefix, 'response')
-    cdfPlot(file_prefix, 'wait')
-    cmpDP(file_prefix, 'response')
-    cmpDP(file_prefix, 'wait')
-    throughputPlot(file_prefix)
+    # cdfPlot(file_prefix, 'response')
+    # cdfPlot(file_prefix, 'wait')
+    # cmpDP(file_prefix, 'response')
+    # cmpDP(file_prefix, 'wait')
+    # throughputPlot(file_prefix)
