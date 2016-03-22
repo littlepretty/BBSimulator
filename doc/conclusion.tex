@@ -1,5 +1,17 @@
 \section{Conclusion and Future Works}
 \label{Sec:Conclusion}
 
-The conclusion goes here.
-
+In this study we explore the way HPC workload scheduler allocates burst buffer,
+a new storage resources that absorb 3 general types of IO operations:
+file staging in, application checkpointing, and file staging out.
+We propose a 3-phase job model specially
+tailored to burst buffer's typical usage scenarios.
+Cerberus is presented on the basis of such model.
+We divide the scheduling problem into 3 phases
+and conquer them separately using dynamic programming based optimization.
+Simulation results show that
+Cerberus could improve application's perceived IO bandwidth significantly.
+There are a lot of future works to be done for Cerberus.
+Implementing Cerberus on realistic environment, for example,
+Trinity supercomputing system, should be beneficial to a variety of
+scientific applications.
