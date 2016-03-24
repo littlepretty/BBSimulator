@@ -35,12 +35,23 @@ Staging output data out to IO node is the business just between burst buffer and
 \subsection{Three-Phase Resource Demand}
 Users typically provide their resource demand for their jobs.
 This is the most important information scheduler could get from the users.
-Therefore, each job is associated with a demand vector in the form of $(c, bb\_in, bb\_run, bb\_out)$,
+Therefore, each job is associated with a demand vector in the form of $(c, rt)$
 where $c$ is the number of needed compute node in running phase,
-$bb\_in$ is the volume of burst buffer user predicted for file stage in,
+$rt$ is the requested runtime user can provide to help scheduler make decisions.
+To be burst buffer aware, demand vector should be augmented
+with fields defining user's request for burst buffer capacity.
+We consider two possible ways to do so.
+Corresponding to the typical usage cases of burst buffer,
+user may provide a \textit{burst buffer triple} $(bb\_in, bb\_run, bb\_out)$,
+where $bb\_in$ is the volume of burst buffer user predicted for staging in data files,
 $bb\_run$ is the volume of burst buffer user preferred for checkpointing during running,
 $bb\_out$ is the volume of burst buffer needed to hold the resulting output data.
-A lazy user may just use the $\max\{bb\_in, bb\_run, bb\_out\}$ at every stage.
-However, we do not make any assumption about $bb\_run$ and $bb\_out$ because it is nontrivial to predict them,
+A job that providing demand vector augmented with
+burst buffer triple is called a \textit{3-phase modeled job}.
+Alternatively, a lazy user may just use the $\max\{bb\_in, bb\_run, bb\_out\}$ at every stage.
+We do not make any assumption about $bb\_run$ and $bb\_out$ because it is nontrivial to predict them,
 both for system scheduler and application owner.
+We refer this augmentation as
+\textit{1-phase modeled jobs} thereafter.
+
 
