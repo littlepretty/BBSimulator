@@ -11,7 +11,7 @@ Burst buffer are able to be shared by applications with any fraction of total am
 Later we will see that when doing optimal scheduling, we may need to allocate by a fixed
 fraction of the total resources(number of compute nodes or amount of burst buffer).
 
-\subsection{User Jobs}
+\subsection{Three-Phase Model for HPC Jobs}
 Users request the system to run their applications as jobs.
 We define $J = (job_1, job_2,..., job_n)$ to be the set of all jobs in the system during
 a period of time interested.
@@ -32,7 +32,7 @@ Compute nodes are release as soon as computation is done, meaning they are avail
 Staging output data out to IO node is the business just between burst buffer and IO nodes.
 
 
-\subsection{Resource Demand}
+\subsection{Three-Phase Resource Demand}
 Users typically provide their resource demand for their jobs.
 This is the most important information scheduler could get from the users.
 Therefore, each job is associated with a demand vector in the form of $(c, bb\_in, bb\_run, bb\_out)$,
