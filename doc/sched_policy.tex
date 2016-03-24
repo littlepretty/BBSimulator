@@ -29,7 +29,7 @@ This fact motivates separated scheduling idiom to be used in different phases, o
 \end{figure}
 
 
-\subsection{IO-BB Scheduling}
+\subsection{Optimize Stage-In Phase}
 In the stage-in phase, only burst buffer demand is considered.
 Scheduling are made based on the value of $bb\_in$ of jobs in $Q_I$.
 If we care about data transfer throughput,
@@ -57,7 +57,7 @@ If we care about task parallelism, following optimization could help:
 The number of tasks doing data loading will be maximized.
 
 
-\subsection{CN-BB Scheduling}
+\subsection{Optimize Running Phase}
 Running jobs require not only compute nodes, but burst buffer to ensure performance and correctness.
 Scheduling are accordingly made based on the value of $c$ and $bb\_run$ of jobs in $Q_R$.
 To maximize multiple types of resource's utilization,
@@ -89,7 +89,7 @@ The optimizing formula can thus be
 \end{align*}
 
 
-\subsection{BB-IO Scheduling}
+\subsection{Optimize Stage-Out Phase}
 Scheduling are made based on the value of $bb\_out$ of jobs in $Q_O$.
 Optimization formula for different purpose are almost the same as these in IO-BB scheduling.
 
@@ -136,7 +136,7 @@ The time complexity of solving Recursion~\ref{Equ:MaxProductRecursion}
 is $O(n\times CN\times BB)$.
 Notice that $CN$ and $BB$ may be very large integers,
 making the pseudo-polynomial algorithm unsuitable
-to be used by scheduler.
+to be used online by scheduler.
 In practice, we could reduce the time complexity by allocating resource
 in a coarser granularity.
 For example, jobs usually asks for compute node in the unit of 512 nodes;
