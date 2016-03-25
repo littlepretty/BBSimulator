@@ -16,7 +16,7 @@ Applications under this architecture can expect to achieve
 in later 2016, but still far from the target of 60 TB/s
 for exa-scale computing platform\cite{Shalf:HPCCS:2010}.
 
-%2. Challenge to current IO architecture
+%2. Challenge to current IO architecture and burst buffer come to resuce.
 The challenge roots in the missing gap in HPC's memory hierarchy.
 The ratio of IO rate of memory on the compute node to the storage disk
 is 100 to 10,000 cycles\cite{TrinitySystem}.
@@ -25,19 +25,21 @@ bursty IO patterns\cite{Carns:MSST:2011, Kim:PDSW:2010},
 resulting from application's
 defensive IO strategy\cite{Latham:CSD:2012, Naik:ICPPW:2009, Dennis:CUG:2009}
 and the needs of subsequent processing of application output.
-On one hand, applications checkpoint periodically
-(so that computation could be restarted after system fault)
-or store intermediate output for subsequent analysis or visualization;
-on the other hand, pushing data from memory to external,
-parallel file system is unproductive due to the IO cycle gap.
-Though this conflict can be fixed by providing higher IO bandwidth capacity,
-another character of bursty IO pattern introduces another problem,
-underutilization of storage system.
-Production applications could generate hundreds of GB to
-tens of TB data in one IO request with significant idle interval.
-For example, observed idle interval of write-intensive jobs
-reported on Intrepid\cite{Liu:MSST:2012},
-varies from several minutes to 2 hours.
+
+
+%On one hand, applications checkpoint periodically
+%(so that computation could be restarted after system fault)
+%or store intermediate output for subsequent analysis or visualization;
+%on the other hand, pushing data from memory to external,
+%parallel file system is unproductive due to the IO cycle gap.
+%Though this conflict can be fixed by providing higher IO bandwidth capacity,
+%another character of bursty IO pattern introduces another problem,
+%underutilization of storage system.
+%Production applications could generate hundreds of GB to
+%tens of TB data in one IO request with significant idle interval.
+%For example, observed idle interval of write-intensive jobs
+%reported on Intrepid\cite{Liu:MSST:2012},
+%varies from several minutes to 2 hours.
 
 %3. Very high level intro to burst buffer
 As an alternative storage design, burst buffer\cite{Bent:HBP:2011, Grider:EXA:2010}
@@ -49,15 +51,54 @@ into burst buffer nodes.
 Researchers\cite{Liu:MSST:2012} has demonstrated that application perceived IO
 bandwidth are significantly improved on burst buffer enabled system.
 Given its usefulness, we expect user will explicitly request for
-these devices at job submission.
-In this paper, we propose Cerberus, a burst buffer aware HPC workload scheduler
-for applications with large data volume.
-As the name indicates, user jobs will be scheduled 3 times
-for its \textit{stage in} phase, \textit{running} phase,
-and \textit{stage-out} phase, respectively.
-In each phase, we provide the optimal scheduling strategy.
-To our best knowledge,
-this is the first attempt to systematically schedule jobs
-running on novel burst buffer enabled storage architecture.
+this new resource upon job submission.
 
+%4. Our work, a new batch scheduler
+In this paper, we propose Cerberus, 
+a novel batch scheduler for HPC system with burst buffer awareness. 
+We propose a 3-phase model for user job 
+based on two of the most important usage cases of burst buffer: 
+application checkpoint restart and data cache/pre-fetch for stage in/out. 
+The lifetime of user job would consist of \textit{stage in} phase, 
+\textit{running} phase, and \textit{stage-out} phase. 
+Unlike existing batch schedulers that 
+make the permanent scheduling decision for job upon its submission, 
+Cerberus would re-evaluate job's requirement at each phase 
+and make the optimal scheduling decisions respectively.
+
+%5. The advantage of Cerberus.
+Both the system and user job can benefit from Cerberus 3-phase scheduling. The responsiveness of system would be greatly improved and user job would suffer less wait time. 
+The burst buffer and compute node will be released right after the job enters next phase, and become available to the following job. Thus, the system utilization would be improved.
+As Cerberus could take advantage of the parallelism of jobs in different phases, the the throughput of system would get improved.
+
+%6. Summarize our contribution
+Our contributions in this paper are summarized as follows:
+
+\begin{enumerate}
+        \item Explore how HPC workload scheduler allocates burst buffer resources.
+                We propose a 3-phase application model tailored the typical
+                usage scenarios of burst buffer, that is, checkpoint restart,
+                data file/cache stage in and stage out.
+        \item On the basis of 3-phase job model, we present Cerberus,
+                a burst buffer aware HPC workload scheduler.
+                Dividing the lifetime of user application to different phases,
+                Cerberus makes it possible to conquer the scheduling goal separately.
+        \item We suggest several optimizing goals for each phases.
+                Though optimal scheduling problem in each phase is NP-hard,
+                dynamic programming with memorization could give precise solutions
+                in practice.
+\end{enumerate}
+
+In the reminder of this paper,
+the next section talks about the status quo of burst buffer and the motivation of our work (section~\ref{Sec:Background and Motivation}).
+Section~\ref{Sec:Model} begins elaborating the 3-phase model Section~\ref{Sec:Model},
+after which Cerberus is introduced in section~\ref{Sec:Scheduler}.
+The details of formulating and solving scheduling problems with
+dynamic programming at each job phase are also
+enumerated in section~\ref{Sec:Scheduler}.
+Starting from section~\ref{Sec:Experiments}, we validate Cerberus
+by simulating the full Trinity supercomputing platform, featured with
+burst buffer hardware.
+Related works are discussed in section~\ref{Sec:RelatedWorks}.
+We conclude this paper and list possible future works in section~\ref{Sec:Conclusion}.
 
