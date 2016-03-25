@@ -1,5 +1,5 @@
 \section{Background and Motivation}
-\label{Sec:Background and Motivation}
+\label{Sec:Background}
 %1. The appear of burst buffer
 Burst buffer enabled IO architecture can help catch up with
 the ever-increasing computational performance and parallelism of HPC system.
@@ -71,6 +71,7 @@ For example, the first case could speedups the \textit{running phase} of
 user's application by acutely absorb the bursty checkpoint-purpose IO request;
 the second case reduce the application's waiting time via
 contracted input/output stage in the execution pipeline of application series.
+To our best knowledge, this is the first attempt to systematically schedule jobs running on novel burst buffer enabled storage architecture.
 
 %4. Contribution summary and paper structure
 %Our contributions in this paper are summarized as follows:
@@ -101,4 +102,3 @@ contracted input/output stage in the execution pipeline of application series.
 %Related works are discussed in section~\ref{Sec:RelatedWorks}.
 %We conclude this paper and list possible future works in section~\ref{Sec:Conclusion}.
 
-To our best knowledge, this is the first attempt to systematically schedule jobs running on novel burst buffer enabled storage architecture.

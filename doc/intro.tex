@@ -67,9 +67,13 @@ Cerberus would re-evaluate job's requirement at each phase
 and make the optimal scheduling decisions respectively.
 
 %5. The advantage of Cerberus.
-Both the system and user job can benefit from Cerberus 3-phase scheduling. The responsiveness of system would be greatly improved and user job would suffer less wait time. 
-The burst buffer and compute node will be released right after the job enters next phase, and become available to the following job. Thus, the system utilization would be improved.
-As Cerberus could take advantage of the parallelism of jobs in different phases, the the throughput of system would get improved.
+Both the system and user job can benefit from Cerberus 3-phase scheduling.
+The responsiveness of system would be greatly improved and
+user job would suffer less wait time. 
+The burst buffer and compute node will be released right after the job enters next phase,
+and become available to the following job. Thus, the system utilization would be improved.
+As Cerberus could take advantage of the parallelism of jobs in different phases,
+the throughput of system would get improved.
 
 %6. Summarize our contribution
 Our contributions in this paper are summarized as follows:
@@ -90,7 +94,8 @@ Our contributions in this paper are summarized as follows:
 \end{enumerate}
 
 In the reminder of this paper,
-the next section talks about the status quo of burst buffer and the motivation of our work (section~\ref{Sec:Background and Motivation}).
+the next section talks about the status quo of burst buffer and
+the motivation of our work (section~\ref{Sec:Background}).
 Section~\ref{Sec:Model} begins elaborating the 3-phase model Section~\ref{Sec:Model},
 after which Cerberus is introduced in section~\ref{Sec:Scheduler}.
 The details of formulating and solving scheduling problems with
