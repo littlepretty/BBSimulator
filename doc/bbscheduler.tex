@@ -415,6 +415,20 @@ both with and without burst buffer to demonstrate that
 1) burst buffer node can accelerate the execution pipeline of all task,
 thus improving the utilization of the computing nodes as well as task response time
 2) our 3-phase model and dynamic programming solution further benefit burst buffer equipped system.
+
+Burst buffer(BB) nodes are drastically improving
+the performance of computational application by providing high perceived IO bandwidth.
+In this paper, we model the execution of typical scientific applications
+that generates tens of TBytes of data on super computer equipped with BB.
+We characterize generic applications by 3 phases:
+data stage-in phase, running phase, and data stage-out phase.
+The novel 3-phase BB aware batch scheduler Cerberus allocate resources in different phases separately.
+In both data stage input and output phase,
+it is possible to maximize data transfer throughput or task parallelism when allocating BB resources.
+In the running phase, we maximize the profit of scheduled tasks.
+We simulate Cerberus scheduling the Trinity supercomputing platform to demonstrate that
+1) burst buffer node can accelerate the execution pipeline of all task, thus improving the task response time
+2) our 3-phase model and dynamic programming solution further benefit burst buffer equipped system.
 \end{abstract}
 
 % no keywords
