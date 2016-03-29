@@ -48,32 +48,36 @@ It fills the gap in memory hierarchy with storage hardware technology
 faster than traditional disks.
 Bursty IO requests could thus be efficiently absorbed and spread out
 into burst buffer nodes.
-Researchers\cite{Liu:MSST:2012} has demonstrated that application perceived IO
+Researchers\cite{Liu:MSST:2012} have demonstrated that application perceived IO
 bandwidth are significantly improved on burst buffer enabled system.
 Given its usefulness, we expect user will explicitly request for
 this new resource upon job submission.
 
 %4. Our work, a new batch scheduler
-In this paper, we propose Cerberus, 
+In this paper, we propose Cerberus\footnote{In Greek mythology,
+Cerberus is a monstrous multi-headed dog (3-phase scheduling scheme),
+who guards the gates of the underworld,
+preventing the dead (jobs) from leaving(running).},
 a novel batch scheduler for HPC system with burst buffer awareness. 
 We propose a 3-phase model for user job 
 based on two of the most important usage cases of burst buffer: 
 application checkpoint restart and data cache/pre-fetch for stage in/out. 
-The lifetime of user job would consist of \textit{stage in} phase, 
+The lifetime of user job consists of \textit{stage in} phase, 
 \textit{running} phase, and \textit{stage-out} phase. 
 Unlike existing batch schedulers that 
 make the permanent scheduling decision for job upon its submission, 
-Cerberus would re-evaluate job's requirement at each phase 
+Cerberus re-evaluate job's requirement at each phase 
 and make the optimal scheduling decisions respectively.
 
 %5. The advantage of Cerberus.
 Both the system and user job can benefit from Cerberus 3-phase scheduling.
-The responsiveness of system would be greatly improved and
-user job would suffer less wait time. 
-The burst buffer and compute node will be released right after the job enters next phase,
-and become available to the following job. Thus, the system utilization would be improved.
-As Cerberus could take advantage of the parallelism of jobs in different phases,
-the throughput of system would get improved.
+System responsiveness can be greatly improved and
+user jobs suffer less wait time. 
+The burst buffer and compute nodes will be released right after the job enters next phase,
+and become available to the following job.
+Thus, the system utilization can be improved.
+As Cerberus takes advantage of the parallelism of jobs in different phases,
+system throughput also gets improved.
 
 %6. Summarize our contribution
 Our contributions in this paper are summarized as follows:

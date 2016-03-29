@@ -33,7 +33,7 @@ or an application can burst its checkpoint to burst buffer
 with extremely high speed (4.4-17.8 TB/s on Trinity);
 upon termination, application data is also able to drain off
 asynchronously to external PFS.
-When utilizing burst buffer in this primary scenario (\textit{checkpoint restart}),
+When utilizing burst buffer in this primary scenario (\textit{checkpoint \& restart}),
 bursty application IO operations can thus be aggregated and absorbed into burst buffers.
 This makes it possible to shift computations that follows IO bursts to an earlier moment
 while burst buffer takes charge of moving potentially TB-level volumes of data.
