@@ -94,9 +94,9 @@ By defining \textit{value} as Equation~\ref{Equ:DefValue},
 we prefer these tasks that claims to take up node resources with short duration.
 Unfortunately, it is difficult to predict $rt_i$ before actually running the job.
 Of course we could use the \textit{expected running time} $ert_i$ specified by user.
-However, by examining the log traces from ANL\cite{JobTrace},
+However, by examining the log traces from Argonne National Laboratory (ANL)\cite{JobTrace},
 we found that the variance between $rt_i$ and $ert_i$ is significantly different.
-For now we can just assume $ert_i$ represent expected running time of $job_i$.
+For now we can just assume $ert_i$ represent $rt_i$ of $job_i$.
 In the future, we could adopt machine learning or data mining ideas
 to predict the running time of a job with demand vector.
 %Notice that then the value of a task is proportional to $c_i*bb_i$.
