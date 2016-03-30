@@ -108,9 +108,11 @@ class BBEventGeneratorDirectBB(BBEventGeneratorDirect):
 
     def generateFinishOutput(self, job):
         """fill in all timestamps once output finishes"""
-        input_dur = job.demand.data_in / self.system.bb.to_cpu
-        output_dur = job.demand.data_out / self.system.cpu.to_bb
+        input_dur = job.demand.data_in / self.system.io.to_bb
+        output_dur = job.demand.data_out / self.system.bb.to_io
         run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_bb
+        run_dur += job.demand.data_in / self.system.bb.to_cpu
+        run_dur += job.demand.data_out / self.system.cpu.to_bb
         job.ts.finish_in = job.ts.start_in + input_dur
         job.ts.start_run = job.ts.finish_in
         job.ts.finish_run = job.ts.start_run + run_dur
@@ -127,20 +129,21 @@ class BBEventGeneratorCerberus(BBEventGeneratorBase):
 
     def generateFinishInput(self, job):
         # input_dur = job.demand.data_in / self.system.io.to_bb
-        input_dur = job.demand.data_in / self.system.bb.to_cpu
+        input_dur = job.demand.data_in / self.system.io.to_bb
         job.ts.finish_in = job.ts.start_in + input_dur
         evt = BBEvent(job, job.ts.finish_in, BBEventType.FinishIn)
         return evt
 
     def generateFinishRun(self, job):
         run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_bb
+        run_dur += job.demand.data_in / self.system.bb.to_cpu
+        run_dur += job.demand.data_out / self.system.cpu.to_bb
         job.ts.finish_run = job.ts.start_run + run_dur
         evt = BBEvent(job, job.ts.finish_run, BBEventType.FinishRun)
         return evt
 
     def generateFinishOutput(self, job):
-        # output_dur = job.demand.data_out / self.system.bb.to_io
-        output_dur = job.demand.data_out / self.system.cpu.to_bb
+        output_dur = job.demand.data_out / self.system.bb.to_io
         job.ts.finish_out = job.ts.start_out + output_dur
         evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
         return evt
