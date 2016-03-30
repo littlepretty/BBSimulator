@@ -30,7 +30,7 @@ def throughputPlot(prefix, delta=500.0):
     data3 = np.genfromtxt(file_prefix + '_maxparallel.out.csv', delimiter=',',
                           skip_header=1, names=first_row3)
     lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
-    labels = ['FCFS BB', 'Max BB', 'Max #Tasks', 'FCFS BB 1D']
+    labels = ['FCFS Cerberus', 'MaxT Cerberus', 'MaxP Cerberus']
     hatches = ['/', '\\', '-']
     all_data = [data1, data2, data3]
     avgs = []
@@ -67,8 +67,8 @@ def throughputPlot(prefix, delta=500.0):
     ax2.set_ylim([0, 3.0])
     ax2.set_yticks(np.arange(0.0, 3.1, 0.6))
     ax1.grid()
-    ax1.legend(loc='upper left', fontsize=14)
-    ax2.legend(loc='upper right', fontsize=14)
+    ax1.legend(loc='upper left', fontsize=16)
+    ax2.legend(loc='upper right', fontsize=16)
     ax1.set_xlabel('Time Sequence / Seconds')
     ax1.set_ylabel('#Jobs / 500 Seconds')
     ax2.set_ylabel('Mean #Jobs')
@@ -117,7 +117,7 @@ def cdfPlot(prefix, column='wait'):
                           skip_header=1, names=first_row3)
     plt.figure(figure_no)
     figure_no += 1
-    labels = ['FCFS BB', 'Max BB', 'Max #Tasks']
+    labels = ['FCFS Cerberus', 'MaxT Cerberus', 'MaxP Cerberus']
     lines = ['b-', 'r:', 'g--']
     i = 0
     for data in [data1, data2, data3]:
