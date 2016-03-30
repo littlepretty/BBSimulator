@@ -50,6 +50,13 @@ They are globally accessible as intermediate storage and distributed among cabin
 Sequential read/write between burst buffer nodes and compute nodes is 8.0 GBps.
 Bandwidth between CPU node and non-burst-buffer IO node is set to 2.5 GBps.
 
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.5in]{3PhaseJobFSM}
+        \caption{Finite State Machine of Scheduling Simulation}
+        \label{Fig:JobFSM}
+\end{figure}
+
 
 \subsection{Q1: Cerberus vs. 1-Phase Batch Scheduler}
 \label{Sec:Sim:DirectIOvsBB}
@@ -125,7 +132,7 @@ This suggests that user should provide burst buffer demand as granular as possib
 
 In Figure~\ref{Fig:3Pvs1PResponse}, we plot 3 different scheduling results by 3 FCFS scheduler.
 \begin{itemize}
-        \item \textbf{1-phase BB}: Jobs are modeled as just 1 phase.
+        \item \textbf{1-Phase BB}: Jobs are modeled as just 1 phase.
                 Users just provide general burst buffer demand throughout
                 entire application lifetime.
         \item \textbf{1D Cerberus}: In this case Cerberus only knows
