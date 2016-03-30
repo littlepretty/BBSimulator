@@ -34,13 +34,13 @@ def utilizationPlot(prefix, column='cpu'):
     figure_no += 1
 
     if column != 'bb':
-        plt.plot(x0, y0, label='1 phase IO', linewidth=3,
+        plt.plot(x0, y0, label='1-Phase IO', linewidth=3,
                  color='blue', linestyle='--')
-    plt.plot(x1, y1, label='1 phase BB', linewidth=3,
+    plt.plot(x1, y1, label='1-Phase BB', linewidth=3,
              color='red', linestyle='--')
-    plt.plot(x2, y2, label='3 phase D', linewidth=3,
+    plt.plot(x2, y2, label='1D Cerberus', linewidth=3,
              color='green', linestyle='--')
-    plt.plot(x3, y3, label='3 phase IRO', linewidth=3,
+    plt.plot(x3, y3, label='Cerberus', linewidth=3,
              color='black', linestyle='--')
 
     plt.legend(loc='lower right')
@@ -117,11 +117,11 @@ def timePlot(prefix, column='response'):
     plt.figure(figure_no)
     figure_no += 1
     plt.plot(sorted_time1, yvals1*100, 'b-',
-             label='1 phase BB', linewidth=3)
+             label='1-Phase BB', linewidth=3)
     plt.plot(sorted_time2, yvals2*100, 'r-.',
-             label='3 phase D', linewidth=3)
+             label='1D Cerberus', linewidth=3)
     plt.plot(sorted_time3, yvals3*100, 'g--',
-             label='3 phase IRO', linewidth=3)
+             label='Cerberus', linewidth=3)
     plt.ylim([0, 101])
     plt.xlabel('Time Duration / Seconds')
     plt.ylabel('Culumative Distribution Function / %')
@@ -158,7 +158,7 @@ def throughputPlot(prefix, delta=500.0):
     all_data = [data1, data2, data3]
     avgs = []
     lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
-    labels = ['Direct BB', 'FCFS BB 1D', 'FCFS BB 3P']
+    labels = ['1-Phase BB', '1D Cerberus', 'Cerberus']
     hatches = ['/', '\\', '-']
     width = 28000
     i = 0
@@ -183,8 +183,8 @@ def throughputPlot(prefix, delta=500.0):
         ax2.bar(end + i*width, avg, width, color=lines[i+3],
                 label='Avg %s' % labels[i], hatch=hatches[i])
         i += 1
-    ax1.legend(loc='upper left', fontsize=14)
-    ax2.legend(loc='upper right', fontsize=14)
+    ax1.legend(loc='upper left', fontsize=16)
+    ax2.legend(loc='upper right', fontsize=16)
     ax1.set_xlabel('Time Sequence / Seconds')
     ax1.set_ylabel('#Jobs / 500 Seconds')
     ax2.set_ylabel('Mean #Jobs')
