@@ -31,11 +31,11 @@ def cdfPlot(prefix, column='response'):
     logging.info('Longest %2f : %.2f' % (sorted_time0[-1], sorted_time1[-1]))
     plt.figure(figure_no)
     figure_no += 1
-    plt.plot(sorted_time0, yvals0*100, label='Direct IO', linewidth=3,
-             color='blue', linestyle='-')
-    plt.plot(sorted_time1, yvals1*100, label='Plain BB', linewidth=3,
-             color='red', linestyle='--')
-    plt.legend(loc='lower right', fontsize=14)
+    plt.plot(sorted_time0, yvals0*100, label='1-Phase IO',
+             linewidth=3, color='blue', linestyle='-')
+    plt.plot(sorted_time1, yvals1*100, label='Cerberus',
+             linewidth=3, color='red', linestyle='--')
+    plt.legend(loc='lower right')
     plt.ylim([0, 101])
     plt.xlabel('Time Duration / Seconds')
     plt.ylabel('Cumulative Distribution Function / %')
@@ -68,7 +68,7 @@ def throughputPlot(prefix, delta=500.0):
     all_data = [data1, data2]
     avgs = []
     lines = ['b:', 'r-.', 'b', 'r']
-    labels = ['Direct IO', 'Plain BB']
+    labels = ['1-Phase IO', 'Cerberus']
     hatches = ['/', '\\', '-']
     i = 0
     fig, ax1 = plt.subplots()
@@ -100,8 +100,8 @@ def throughputPlot(prefix, delta=500.0):
     ax1.grid()
     plt.grid()
     plt.xlim([0, 1800000])
-    ax1.legend(loc='upper left', fontsize=14)
-    ax2.legend(loc='upper right', fontsize=14)
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
     ax1.set_xlabel('Time Sequence / Seconds')
     ax1.set_ylabel('#Jobs / 500 Seconds')
     ax2.set_ylabel('Mean #Jobs')
