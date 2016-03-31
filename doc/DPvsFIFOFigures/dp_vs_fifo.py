@@ -38,7 +38,7 @@ def throughputPlot(prefix, delta=500.0):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     figure_no += 1
-    width = 28000
+    width = 40000
     end = -1
     for data in all_data:
         finish = data['complete']
@@ -62,13 +62,13 @@ def throughputPlot(prefix, delta=500.0):
                 color=lines[i+3], label='Avg %s' % labels[i])
         i += 1
 
-    ax1.set_ylim([0, 21])
-    ax1.set_yticks(np.arange(0.0, 21.1, 4.2))
-    ax2.set_ylim([0, 3.0])
-    ax2.set_yticks(np.arange(0.0, 3.1, 0.6))
+    ax1.set_ylim([0, 18])
+    ax1.set_yticks(np.arange(0.0, 18.1, 1.8))
+    ax2.set_ylim([0, 1.8])
+    ax2.set_yticks(np.arange(0.0, 1.9, 0.18))
     ax1.grid()
     ax1.legend(loc='upper left', fontsize=16)
-    ax2.legend(loc='upper right', fontsize=16)
+    ax2.legend(loc='lower right', fontsize=16)
     ax1.set_xlabel('Time Sequence / Seconds')
     ax1.set_ylabel('#Jobs / 500 Seconds')
     ax2.set_ylabel('Mean #Jobs')

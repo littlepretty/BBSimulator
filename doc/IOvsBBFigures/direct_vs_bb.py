@@ -94,9 +94,9 @@ def throughputPlot(prefix, delta=500.0):
         ax2.bar(end + width * i, avg, width, hatch=hatches[i],
                 color=lines[i+2], label='Avg %s' % labels[i])
         i += 1
-    ax1.set_ylim([0, 18])
-    ax2.set_ylim([0, 2.7])
-    ax2.set_yticks(np.arange(0, 2.8, 0.3))
+    ax1.set_ylim([0, 16])
+    ax2.set_ylim([0, 2.0])
+    ax2.set_yticks(np.arange(0, 2.1, 0.25))
     ax1.grid()
     plt.grid()
     plt.xlim([0, 1800000])

@@ -160,7 +160,7 @@ def throughputPlot(prefix, delta=500.0):
     lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
     labels = ['1-Phase BB', '1D Cerberus', 'Cerberus']
     hatches = ['/', '\\', '-']
-    width = 28000
+    width = 50000
     i = 0
     end = -1
     fig, ax1 = plt.subplots()
@@ -188,9 +188,9 @@ def throughputPlot(prefix, delta=500.0):
     ax1.set_xlabel('Time Sequence / Seconds')
     ax1.set_ylabel('#Jobs / 500 Seconds')
     ax2.set_ylabel('Mean #Jobs')
-    ax1.set_ylim([0, 18])
-    ax2.set_ylim([0, 2.7])
-    ax2.set_yticks(np.arange(0, 3.0, 0.3))
+    ax1.set_ylim([0, 16])
+    ax2.set_ylim([0, 2])
+    ax2.set_yticks(np.arange(0, 2.1, 0.25))
     ax1.grid()
     plt.grid()
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
