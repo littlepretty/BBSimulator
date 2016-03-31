@@ -220,7 +220,8 @@ class DPSolver(object):
         self.runtime += time.clock() - start
         return choices
 
-    def maxCpuBBProductIterative(self, CPU, BB, cpu_demand, bb_demand):
+    def maxCpuBBProductIterative(self, CPU, BB,
+                                 cpu_demand, bb_demand, rt_demand):
         N = len(cpu_demand)
         memo = [None] * (N+1)
         for i in range(0, N+1):
@@ -235,9 +236,11 @@ class DPSolver(object):
                     for w in range(0, BB+1):
                         if c >= cpu_demand[i-1] and w >= bb_demand[i-1]:
                             dp1 = memo[i-1][c][w]
+                            value = float(cpu_demand[i-1] * bb_demand[i-1]) \
+                                / (rt_demand[i-1] ** 2)
                             dp2 = \
                                 memo[i-1][c-cpu_demand[i-1]][w-bb_demand[i-1]] \
-                                + cpu_demand[i-1] * bb_demand[i-1]
+                                + value
                             memo[i][c][w] = max(dp1, dp2)
                         else:
                             memo[i][c][w] = memo[i-1][c][w]
@@ -247,8 +250,10 @@ class DPSolver(object):
             if i <= 0:
                 return
             if cpu_demand[i-1] <= c and bb_demand[i-1] <= w:
+                value = float(cpu_demand[i-1] * bb_demand[i-1]) \
+                    / (rt_demand[i-1] ** 2)
                 if memo[i-1][c - cpu_demand[i-1]][w - bb_demand[i-1]] \
-                        + cpu_demand[i-1] * bb_demand[i-1] >= memo[i-1][c][w]:
+                        + value >= memo[i-1][c][w]:
                     jobs.append(self.jobs[i-1])
                     trackBackJobs(i - 1, c - cpu_demand[i-1],
                                   w - bb_demand[i-1])
@@ -264,7 +269,7 @@ class DPSolver(object):
         logging.debug('\t Maximum value is %.2f' % memo[N][CPU][BB])
         return jobs
 
-    def maxCpuBBProduct(self, CPU, BB, cpu_demand, bb_demand):
+    def maxCpuBBProduct(self, CPU, BB, cpu_demand, bb_demand, rt_demand):
         """maximize utilization of (cpu, burst buffer) pair"""
         N = len(cpu_demand)
         # memo[i][c][w] is the optimal solution for jobs[0...i-1] with
@@ -285,9 +290,10 @@ class DPSolver(object):
                 return memo[i][c][w]
             else:
                 if cpu_demand[i-1] <= c and bb_demand[i-1] <= w:
+                    value = float(cpu_demand[i-1] * bb_demand[i-1]) \
+                        / (rt_demand[i-1] ** 2)
                     dp1 = recursiveRCB(i - 1, c - cpu_demand[i-1],
-                                       w - bb_demand[i-1]) + \
-                        cpu_demand[i-1] * bb_demand[i-1]
+                                       w - bb_demand[i-1]) + value
                     dp2 = recursiveRCB(i - 1, c, w)
                     if dp1 >= dp2:
                         memo[i][c][w] = dp1
@@ -302,8 +308,10 @@ class DPSolver(object):
             if i <= 0:
                 return
             if cpu_demand[i-1] <= c and bb_demand[i-1] <= w:
+                value = float(cpu_demand[i-1] * bb_demand[i-1]) \
+                    / (rt_demand[i-1] ** 2)
                 if memo[i-1][c - cpu_demand[i-1]][w - bb_demand[i-1]] \
-                        + cpu_demand[i-1] * bb_demand[i-1] >= memo[i-1][c][w]:
+                        + value >= memo[i-1][c][w]:
                     jobs.append(self.jobs[i-1])
                     trackBackJobs(i - 1, c - cpu_demand[i-1],
                                   w - bb_demand[i-1])
@@ -323,11 +331,13 @@ class DPSolver(object):
         self.jobs = all_jobs[:size]
         cpu_demand = [int(job.demand.num_core / CPU_unit) for job in self.jobs]
         bb_demand = [int(job.demand.data_run / BB_unit) for job in self.jobs]
+        rt_demand = [job.demand.exp_rt for job in self.jobs]
         self.runs += 1
         start = time.clock()
         choices = self.maxCpuBBProductIterative(int(CPU / CPU_unit),
                                                 int(BB / BB_unit),
-                                                cpu_demand, bb_demand)
+                                                cpu_demand, bb_demand,
+                                                rt_demand)
         self.runtime += time.clock() - start
         return choices
 
