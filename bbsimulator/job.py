@@ -19,9 +19,10 @@ class BBJobTimeStamp(object):
 
 class BBJobDemand(object):
     """demand statistics"""
-    def __init__(self, num_core, data_in, data_run, data_out):
+    def __init__(self, num_core, exp_rt, data_in, data_run, data_out):
         super(BBJobDemand, self).__init__()
         self.num_core = float(num_core)
+        self.exp_rt = float(exp_rt)
         # additional trace data
         self.data_in = float(data_in)
         self.data_run = float(data_run)
