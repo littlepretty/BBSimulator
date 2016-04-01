@@ -5,10 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from bisect import bisect_left, bisect_right
+from python_log_indenter import IndentedLoggerAdapter
 
 
 def cdfPlot(prefix, column='response'):
     global figure_no
+    log.add()
     data0 = np.genfromtxt(prefix + '_1pio.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
     data1 = np.genfromtxt(prefix + '_plain.out.csv', delimiter=',',
@@ -17,8 +19,8 @@ def cdfPlot(prefix, column='response'):
     time1 = data1[column]
     complete0 = data0['complete'][-1]
     complete1 = data1['complete'][-1]
-    logging.info('Direct IO complete at %.2f' % complete0)
-    logging.info('Plain BB complete at %.2f' % complete1)
+    log.info('Direct IO complete all jobs at %.2f' % complete0)
+    log.info('Plain BB complete all jobs at %.2f' % complete1)
 
     sorted_time0 = np.sort(time0)
     yvals0 = np.arange(len(sorted_time0))/float(len(sorted_time0))
@@ -26,9 +28,10 @@ def cdfPlot(prefix, column='response'):
     sorted_time1 = np.sort(time1)
     yvals1 = np.arange(len(sorted_time1))/float(len(sorted_time1))
 
-    logging.info('Ratio between %s = %.2f' %
-                 (column, float(sorted_time0[-1]) / sorted_time1[-1]))
-    logging.info('Longest %2f : %.2f' % (sorted_time0[-1], sorted_time1[-1]))
+    log.info('Worst-case ratio between %s = %.2f' %
+             (column, float(sorted_time0[-1]) / sorted_time1[-1]))
+    log.add().info('Longest %2f : %.2f' % (sorted_time0[-1], sorted_time1[-1]))
+    log.sub()
     plt.figure(figure_no)
     figure_no += 1
     plt.plot(sorted_time0, yvals0*100, label='1-Phase IO',
@@ -43,7 +46,7 @@ def cdfPlot(prefix, column='response'):
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.savefig(prefix + '_direct_vs_bb_%s.eps' % column, format='eps',
                 bbox_inches='tight')
-
+    log.sub()
 
 def calculateThroughput(finish, interval):
     throughputs = []
@@ -61,6 +64,7 @@ def calculateThroughput(finish, interval):
 
 def throughputPlot(prefix, delta=500.0):
     global figure_no
+    log.add()
     data1 = np.genfromtxt(prefix + '_1pio.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
     data2 = np.genfromtxt(file_prefix + '_plain.out.csv', delimiter=',',
@@ -90,7 +94,7 @@ def throughputPlot(prefix, delta=500.0):
     i = 0
     end += 180000
     for avg in avgs:
-        logging.info('Avg Throughput %s = %.3f' % (labels[i], avg))
+        log.info('Avg Throughput %s = %.3f' % (labels[i], avg))
         ax2.bar(end + width * i, avg, width, hatch=hatches[i],
                 color=lines[i+2], label='Avg %s' % labels[i])
         i += 1
@@ -107,11 +111,13 @@ def throughputPlot(prefix, delta=500.0):
     ax2.set_ylabel('Mean #Jobs')
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.savefig(prefix + '_direct_vs_bb_throughput.eps', fmt='eps')
-
+    log.sub()
 
 if __name__ == '__main__':
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
+    log = IndentedLoggerAdapter(logging.getLogger(__name__))
+    log.info('Direct IO vs Cerberus')
     file_prefix = '1000jobs'
     figure_no = 0
     first_row1 = ['jid', 'submit', 'iput',

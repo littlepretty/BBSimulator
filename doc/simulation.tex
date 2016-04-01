@@ -3,23 +3,23 @@
 
 This section evaluate Cerberus by answering several key questions.
 \begin{itemize}
-        \item Q1: will Cerberus improve application performance by utilizing burst buffer nodes?
-        \item Q2: Will job demand on burst buffer effect Cerberus?
+        \item \textbf{Q1}: will Cerberus improve application performance
+                by utilizing burst buffer nodes?
+        \item \textbf{Q2}: Will job demand on burst buffer effect Cerberus?
                 Why bother to divide the job execution into 3 phases?
-        \item Q3: Can dynamic programming based optimization help Cerberus further
+        \item \textbf{Q3}: Can dynamic programming based optimization
+                help Cerberus further
 improve application performance?
 \end{itemize}
-Our newly developed event-driven simulator, BBSimulator, is used to simulating
+Our newly developed event-driven simulator, BBSim, is used to simulating
 the Trinity system described later.
 % metric
-We select 2 key evaluation metrics, job's response time and system's throughput,
-when evaluating our design.
+We select 2 key evaluation metrics, job's \textit{response time} and 
+\textit{system throughput}, when evaluating our design.
 Response time is the time duration from job submission to its fully completion,
 which is the major concern from user's perspective.
 On the other hands, system throughput, defined as the number of jobs finished in
-a fixed time period, measures the performance of computing system.
-
-\subsection{Job Trace}
+a fixed time period (500 seconds), measures the performance of computing system.
 % trace
 Job trace is from ANL's Blue Gene Intrepid system
 from January to September 2009\cite{JobTrace}.
@@ -36,7 +36,7 @@ The patches 3 fields may or may not be used in scheduling,
 depends on both the model of the jobs and the experiment scenario.
 
 
-\subsection{BBSimulator for Trinity}
+\subsection{Trinity and BBSim}
 We consider simulating the full Trinity super computer\cite{TrinitySystem}.
 The number of compute nodes on Trinity is about 18,936,
 e.g. 9,436 Intel Haswell nodes
@@ -47,8 +47,47 @@ IO nodes are replaced by the same number of burst buffer nodes.
 Eventually Trinity plans to delivery up to 576 burst buffer nodes of 3.7 PB,
 consisted of Trinity IO nodes with PCIe SSD card.
 They are globally accessible as intermediate storage and distributed among cabinets.
-Sequential read/write between burst buffer nodes and compute nodes is 8.0 GBps.
-Bandwidth between CPU node and non-burst-buffer IO node is set to 2.5 GBps.
+Sequential read/write speed of burst buffer nodes is 8.0 GBps.
+Bandwidth between CPU node and non-burst-buffer IO node is set to 1.0 GBps.
+
+We develop an event-driven simulator for burst buffer enabled HPC system, named BBSim,
+from scratch in Python to mimic Cerberus scheduling Trinity.
+It roughly consists of 1,400 lines of code.
+Figure~\ref{Fig:JobFSM} depicts the simulation lifetime of a job in BBSim.
+The \textit{state} of the job changes depends on its current status and
+happening \textit{events}.
+An \textit{action} is taken along with state change.
+For example, submitted $job_i$ will enter \textbf{Wait Stage-in} state;
+this state transition triggers Cerberus doing scheduling.
+If $job_i$ scheduled to do stage-in, it changes to Staging-in state
+and is removed from the input queue $Q_I$;
+otherwise, $Q_I$ will hold $job_i$ and its status remains unchanged.
+When required data is loaded into burst buffer, $job_i$ will be put into $Q_R$;
+this transition also triggers Cerberus schedule $Q_I$ since certain amount of
+burst buffer are released by $job_i$.
+In BBSim, in addition to submission, whenever a job finish any one of its 3 phases,
+Cerberus will exam and schedule on corresponding queue.
+
+For those jobs selected by Cerberus,
+we generate ``finish stage-in/run/stage-out" event after
+they are removed from $Q_I$/$Q_R$/$Q_O$.
+The timestamps of these events are calculated using following model:
+\begin{align}
+        TS_{fin\_in} &= TS_{start\_in} + \frac{bb\_in}{BW_{io\_to\_bb}}\label{Equ:FinIn} \\
+        TS_{fin\_run} &= TS_{start\_run} + \frac{bb\_run + bb\_in}{BW_{bb\_to\_cn}}\label{Equ:FinRun} \\
+        TS_{fin\_out} &= TS_{start\_out} + \frac{bb\_out}{BW_{cn\_to\_bb}} \label{Equ:FinOut}
+\end{align}
+where $TS_{fin\_x}$ stands for the timestamps of finishing phase $x$,
+$TS_{start\_x}$ stands for the timestamps of starting phase $x$.
+Notice Equation~\ref{Equ:FinRun} assumes that the bandwidth from compute nodes to
+burst buffer nodes and the bandwidth from the other way around are the same.
+BBSim does not need to generate events like ``not scheduled",
+``staging in/out data", and ``running".
+
+Though target on burst buffer system, BBSim supports simulating system with only
+traditional IO nodes.
+It is not coupled with Cerberus; it is easy to simulating many other scheduler in BBSim,
+which can be proved by our following experiments for various schedulers.
 
 \begin{figure}[!t]
         \centering
@@ -61,28 +100,28 @@ Bandwidth between CPU node and non-burst-buffer IO node is set to 2.5 GBps.
 \subsection{Q1: Cerberus vs. 1-Phase Batch Scheduler}
 \label{Sec:Sim:DirectIOvsBB}
 In this section, we demonstrate that by utilizing burst buffer nodes,
-job scheduler could improve the applications' performance.
+job scheduler could improve the performance of both applications and system.
 Figure~\ref{Fig:DirectIOvsBBResponse} compares CDF of the response time of 1185 jobs.
-When scheduler can allocate burst buffer to jobs (denoted as Plain BB),
-all jobs finish in 358,000 seconds counting from their submission time.
+When scheduler can allocate burst buffer to jobs,
+response time is bounded by 391163 seconds, counting from their submission time.
 However, the worst case in system without burst buffer
-(denoted as Direct IO) is catastrophical.
-There are jobs that takes almost 1,450,000 seconds to finish,
-which is 4.05 times slow as the most non-responsive job
+(denoted as 1-Phase IO) is catastrophical.
+There are jobs that takes 1,386,735 seconds to finish,
+which is 3.55 times slow as the most non-responsive job
 in system equipped with burst buffer.
-\textit{In average case, more than 90\% of the jobs scheduled by Cerberus
-response faster than 1-Phase Batch scheduler.}
+\textit{In average case, more than 85\% of the jobs scheduled by Cerberus
+response faster than 1-Phase Batch scheduler on non-BB system.}
 The improvement mainly comes from the difference of IO operation efficiency between
 traditional IO nodes and burst buffer nodes.
-There are only less than 10\% of the jobs response quicker without needing burst buffer.
+There are only about 10\% of the jobs response quicker without needing burst buffer.
 Figure~\ref{Fig:DirectIOvsBBWait} reveals the total waiting time for both cases.
 Notice that system without burst buffer only request compute nodes.
-This means the waiting time is exactly the duration
-from its submission to actual starting running.
+In this case, waiting time is the duration from its submission
+to actual starting running.
 The difference of worst case waiting time is drastic.
-Without burst buffer nodes, job's wait duration in worst case is 6.41 times
+Without burst buffer nodes, job's wait duration in worst case is 4.54 times
 slow as the worst one on systems with burst buffer;
-the upper bound of waiting duration for burst buffer systems is about 210,000 seconds.
+the upper bound of waiting duration for burst buffer systems is about 280,000 seconds.
 The reason is more than just bandwidth increment
 for in our simulation setting $BW_{bb} / BW_{io}=3.2$.
 More implicit reason is that because of burst buffer's better ability to
@@ -93,20 +132,19 @@ if they can access burst buffer.
 
 
 Using the collected completion time, we calculate system's throughput over time sequence.
-Figure~\ref{Fig:DirectIOvsBBThroughput} shows the number of tasks finished
-in a fixed time unit (500 seconds) for system using burst buffer nodes and not.
-It totally takes 1,448,512 seconds for the system without burst buffer nodes to
+Figure~\ref{Fig:DirectIOvsBBThroughput} shows the system throughput for
+both system using burst buffer nodes and not.
+As indicated by the bar chart,
+\textit{the ratio of average throughput between two systems is 3.56,
+namely 1.518 to 0.427.}
+It totally takes 1,387,879 seconds for the system without burst buffer nodes to
 server all 1185 jobs.
 The last job is job \#1150, which requested 4096 cores and 59 TB data space.
-It starts at 380 seconds but waited 1,341,696 seconds.
+It starts at 1144 seconds but waited 1,272,672 seconds.
 In contrast, when system installed burst buffer nodes,
-it accomplishes the same 1185 jobs in 357,586 seconds.
+it accomplishes the same 1185 jobs in 391,635 seconds.
 Job \#1150 is the second last job finished, but both its waiting time and response time
-are significantly reduced, 202853 and 256866 seconds respectively.
-As indicated by the bar chart,
-\textit{the ratio of average throughput between two systems is a little larger than 4, namely 1.662 to 0.411.}
-This approximately coincides with the 4-time worst-case response speedup,
-made possible due to burst buffer equipments.
+are significantly reduced, 275,585 and 337,723 seconds respectively.
 
 \begin{figure*}[!t]
         \centering
@@ -122,6 +160,13 @@ made possible due to burst buffer equipments.
         \caption{Performance of 1185 Applications: IO Node Only System vs. Burst Buffer System}
         \label{Fig:DirectIOPerformance}
 \end{figure*}
+
+\begin{figure}[!t]
+        \centering
+        \includegraphics[width=3.2in]{IOvsBBFigures/1000jobs_direct_vs_bb_throughput}
+        \caption{System Throughput, IO Node Only vs. Burst Buffer System}
+        \label{Fig:DirectIOvsBBThroughput}
+\end{figure}
 
 
 \subsection{Q2: Demand Granularity Matters?}
@@ -225,12 +270,6 @@ We believe this validates the indispensable 3 phase job model and
 the necessity that user provides data capacity demand for each phase.
 
 
-\begin{figure}[!t]
-        \centering
-        \includegraphics[width=3.2in]{IOvsBBFigures/1000jobs_direct_vs_bb_throughput}
-        \caption{System Throughput, IO Node Only vs. Burst Buffer System}
-        \label{Fig:DirectIOvsBBThroughput}
-\end{figure}
 
 \begin{figure*}[!t]
         \centering
