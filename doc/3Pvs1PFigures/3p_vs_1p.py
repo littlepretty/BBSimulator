@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 from bisect import bisect_left, bisect_right
+from python_log_indenter import IndentedLoggerAdapter
 
 
 def utilizationPlot(prefix, column='cpu'):
@@ -89,6 +90,7 @@ def jobPlot(prefix):
 
 def timePlot(prefix, column='response'):
     global figure_no
+    log.add()
     data1 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
                           skip_header=1,
                           names=first_row1)
@@ -122,6 +124,11 @@ def timePlot(prefix, column='response'):
              label='1D Cerberus', linewidth=3)
     plt.plot(sorted_time3, yvals3*100, 'g--',
              label='Cerberus', linewidth=3)
+    log.info('Worst-case ratio between %s' % column)
+    log.add().info('%2f : %.2f : %.2f' %
+                   (sorted_time1[-1], sorted_time2[-1], sorted_time3[-1]))
+    log.sub()
+
     plt.ylim([0, 101])
     plt.xlabel('Time Duration / Seconds')
     plt.ylabel('Culumative Distribution Function / %')
@@ -130,7 +137,7 @@ def timePlot(prefix, column='response'):
     plt.legend(loc='lower right')
     plt.savefig(prefix + '_3p_vs_1p_%s.eps' % column, format='eps',
                 bbox_inches='tight')
-    # plt.show()
+    log.sub()
 
 
 def calculateThroughput(finish, interval):
@@ -149,6 +156,7 @@ def calculateThroughput(finish, interval):
 
 def throughputPlot(prefix, delta=500.0):
     global figure_no
+    log.add()
     data1 = np.genfromtxt(file_prefix + '_1pbb.out.csv', delimiter=',',
                           skip_header=1, names=first_row1)
     data2 = np.genfromtxt(prefix + '_3p_same.out.csv', delimiter=',',
@@ -160,7 +168,7 @@ def throughputPlot(prefix, delta=500.0):
     lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
     labels = ['1-Phase BB', '1D Cerberus', 'Cerberus']
     hatches = ['/', '\\', '-']
-    width = 50000
+    width = 40000
     i = 0
     end = -1
     fig, ax1 = plt.subplots()
@@ -170,6 +178,8 @@ def throughputPlot(prefix, delta=500.0):
         latest_finish = finish.max()
         intervals = range(0, int(latest_finish + delta), int(delta))
         throughputs = calculateThroughput(finish, intervals)
+        log.info('Max Throughput of %s = %.3f' %
+                 (labels[i], np.max(throughputs)))
         avgs.append(np.mean(throughputs))
         end = max(end, intervals[-1])
         ax1.plot(intervals[1:], throughputs, lines[i],
@@ -179,7 +189,8 @@ def throughputPlot(prefix, delta=500.0):
     end += 20000
     ax2 = ax1.twinx()
     for avg in avgs:
-        logging.info('Avg Throughput of %s = %.3f' % (labels[i], avg))
+        log.info('Avg Throughput of %s = %.3f' % (labels[i], avg))
+
         ax2.bar(end + i*width, avg, width, color=lines[i+3],
                 label='Avg %s' % labels[i], hatch=hatches[i])
         i += 1
@@ -189,18 +200,21 @@ def throughputPlot(prefix, delta=500.0):
     ax1.set_ylabel('#Jobs / 500 Seconds')
     ax2.set_ylabel('Mean #Jobs')
     ax1.set_ylim([0, 16])
-    ax2.set_ylim([0, 2])
-    ax2.set_yticks(np.arange(0, 2.1, 0.25))
+    ax2.set_ylim([0, 2.4])
+    ax2.set_yticks(np.arange(0, 2.5, 0.3))
     ax1.grid()
     plt.grid()
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.savefig(prefix + '_3p_vs_1p_throughput.eps', fmt='eps')
+    log.sub()
 
 
 if __name__ == '__main__':
     figure_no = 0
     # logging.basicConfig(level=logging.DEBUG)
     logging.basicConfig(level=logging.INFO)
+    log = IndentedLoggerAdapter(logging.getLogger(__name__))
+    log.info('3P vs 1P')
     file_prefix = '1000jobs'
     first_row3 = ['jid', 'submit', 'wait_in',
                   'iput', 'wait_run', 'run',
