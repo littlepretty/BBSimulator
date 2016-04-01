@@ -95,6 +95,10 @@ Our contributions in this paper are summarized as follows:
                 Though optimal scheduling problem in each phase is NP-hard,
                 dynamic programming with memorization could give precise solutions
                 in practice.
+        \item We develop BBSim, a event-driven simulator for scheduling
+                BB enabled HPC system. We can simulate the scheduling results of
+                systems with either traditional IO nodes or burst buffer nodes.
+                BBSim supports various kind of job scheduler.
 \end{enumerate}
 
 In the reminder of this paper,
@@ -106,8 +110,7 @@ The details of formulating and solving scheduling problems with
 dynamic programming at each job phase are also
 enumerated in section~\ref{Sec:Scheduler}.
 Starting from section~\ref{Sec:Experiments}, we validate Cerberus
-by simulating the full Trinity supercomputing platform, featured with
-burst buffer hardware.
+by simulating the burst buffer enabled Trinity supercomputing platform on BBSim.
 Related works are discussed in section~\ref{Sec:RelatedWorks}.
 We conclude this paper and list possible future works in section~\ref{Sec:Conclusion}.
 
