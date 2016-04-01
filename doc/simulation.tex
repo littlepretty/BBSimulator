@@ -114,6 +114,7 @@ response faster than 1-Phase Batch scheduler on non-BB system.}
 The improvement mainly comes from the difference of IO operation efficiency between
 traditional IO nodes and burst buffer nodes.
 There are only about 10\% of the jobs response quicker without needing burst buffer.
+
 Figure~\ref{Fig:DirectIOvsBBWait} reveals the total waiting time for both cases.
 Notice that system without burst buffer only request compute nodes.
 In this case, waiting time is the duration from its submission
@@ -197,15 +198,15 @@ Notice that 1-phase BB scheduler must subject to burst buffer capacity constrain
 %Response time of system without burst buffer devices are also plotted for comparison.
 
 %Unsurprisingly, jobs' response time is improving as long as they could utilizing burst buffer.
-Let's compare scheduling results of 1-phase BB and 1D Cerberus,
+Let's compare scheduling results of 1-Phase BB and 1D Cerberus,
 both of which only have rough data information of application.
-\textit{More than 60\% of the 3-phase-modeled jobs finish faster than 1-phase-modeled jobs.}
-The longest 3-phase-modeled job takes 395,211 seconds to finish
-while the slowest 1-phase-modeled job needs about 581,000 seconds to finish.
-The improvement is about 38.69\% for the worst case.
+More than 60\% of the 3-phase-modeled jobs finish faster than 1-phase-modeled jobs.
+The longest 3-phase-modeled job takes 490,174 seconds to finish
+while the slowest 1-phase-modeled job needs about 828,991 seconds to finish.
+The improvement is about 40.87\% for the worst case.
 The reason of such improvement is as follows.
-For the 1-phase-modeled jobs, burst buffer nodes will be exclusively taken by scheduled jobs
-throughout their lifetime.
+For the 1-phase-modeled jobs, burst buffer nodes will be exclusively
+taken by scheduled jobs throughout their lifetime.
 In contrast, each time a 3-phase-modeled job finish inputing, running or outputing,
 Cerberus will reclaim burst buffer and CPU resources.
 This gives Cerberus more opportunity to schedule the system resources.
@@ -213,16 +214,17 @@ At last, when comparing the case of Cerberus with 1D Cerberus,
 we find another advantage of our 3-phase model.
 If benign users can provide finer-grain information of data/IO demand,
 Cerberus can programme each queue separately and get better scheduling result.
-In our simulation, when Cerberus knows more about application's demand in different phases,
-the worst absolute response time is less than 358,000 seconds.
-This is 9.42\% improvement to 3-phase-modeled jobs
+In our simulation,
+since Cerberus knows more about application's demand in different phases,
+the worst absolute response time is less than 391,163 seconds.
+This is 20.20\% improvement to 3-phase-modeled jobs
 when Cerberus only knows the upper bound of data demand,
-38.38\% better than the slowest 1-phase-modeled job.
-In average case, 80\% of the 3-phase-modeled jobs scheduled by Cerberus
-finish earlier than 1-phase-modeled jobs,
+52.81\% better than the slowest 1-phase-modeled job.
+In average case, \textit{more than 80\% of the jobs 
+scheduled by Cerberus finish earlier than 1-phase-modeled jobs,}
 on the same condition that the same amount of burst buffer nodes are available to applications.
-Meanwhile, more than 90\% of the jobs takes less time if user specifies data usage demand
-at each phase to Cerberus.
+Meanwhile, \textit{more than 90\% of the jobs takes less time if user 
+specifies data usage demand at each phase to Cerberus, e.g. Cerberus vs. 1D Cerberus.}
 
 We can reason about why Cerberus's scheduling result is better than
 naively integrating batch scheduler with burst buffer constraint
@@ -239,7 +241,7 @@ Comparing the total waiting time shown in Figure~\ref{Fig:3Pvs1PWait}
 to waiting time in different queues,
 we see that jobs did not spend much time in either input queue $Q_I$ or output queue.
 To be specific, the upper bounds of time spent in input queue are
-$<$ 10\% and $<$ 20\% of the total waiting time in the case of 1-phase scheduler
+$<$ 12.5\% and $<$ 6\% of the total waiting time in the case of 1-phase scheduler
 for 1D Cerberus and Cerberus respectively;
 the upper bounds of time spent in output queue $Q_O$ are
 less than 5\% of the total waiting time of 1-phase-scheduler case
@@ -248,7 +250,6 @@ As for the time waiting for running, the corresponding upper bound percentages
 are 30\% and 40\% approximately.
 The difference of waiting time among 3 cases results in the different
 response performance.
-
 
 Figure~\ref{Fig:3Pvs1PThroughput} describes system throughput of these three different scenarios.
 It helps us examine the performance of the scheduling in time sequence.
@@ -263,9 +264,9 @@ Cerberus' runs counter to the both previous cases.
 Even though beginning with throughput trough,
 Cerberus manages to make the system having high throughput from 50,000 to 250,000 seconds,
 during which system can achieve throughput around 10 to 12 per 500 seconds. 
-\textit{In average, the throughput of 3-phase IRO case is 1.662 jobs / 500 seconds.}
-It is 62.15\% higher than the 1-phase BB case (1.025 jobs / 500 seconds) and
-11.10\% higher than the 1D Cerberus case (1.496 jobs / 500 seconds).
+\textit{In average, the throughput of Cerberus is 1.518 jobs / 500 seconds.}
+It is 112\% of the 1-Phase BB case (0.716 jobs / 500 seconds) and
+25.35\% higher than the 1D Cerberus case (1.211 jobs / 500 seconds).
 We believe this validates the indispensable 3 phase job model and
 the necessity that user provides data capacity demand for each phase.
 
@@ -326,32 +327,31 @@ given by Equation~\ref{Equ:MaxProductRecursion}
 As indicated by Figure~\ref{Fig:DPvsFIFOResponse}, response time of
 jobs scheduled by both MaxT Cerberus and MaxP Cerberus are reduced.
 The most non-responsive job for both MaxT Cerberus and MaxP Cerberus is job \#445,
-taking 325,753 and 316,157 seconds respectively.
-In contrast, job \#445 takes 357,206 seconds to finish in FCFS Cerberus.
-This is 9.66\% slower than MaxT Cerberus and 12.98\% slower than MaxP Cerberus.
+taking 359,134 and 352,873 seconds respectively.
+In contrast, job \#445 takes 391,163 seconds to finish in FCFS Cerberus.
+This is 8.19\% slower than MaxT Cerberus and 9.79\% slower than MaxP Cerberus.
 When we consider the overall response time of entire job set,
-we see more than 75\% of the tasks response faster when we choose jobs according to
-optimization result.
+we see more than \textit{80\% of the tasks response faster when we do optimization}.
 The scheduling results of optimized Cerberus are fairly closed to each other.
-\textit{In this simulation, 70\% of the jobs could get better response time
-if we maximizing number of parallelable tasks,
-versus maximizing transferred data.}
+%In this simulation, 70\% of the jobs could get better response time
+%if we maximizing number of tasks, versus maximizing transferred data.
+
 The time duration application waits for running,
 or the time application spend in running queue,
 is plotted in Figure~\ref{Fig:DPvsFIFOWaitRun}.
-We can see that in both optimization cases, Cerberus hold a couple of jobs waiting
+The tail of both MaxT and MaxP shows that Cerberus hold a couple of jobs waiting
 in its running queue for a very long time,
 even longer than the FCFS case.
 We figure out the reason of this long delay once we examine the detail of these jobs.
 First they are submitted at early middle phase.
-Job \#435 waits 206,914 seconds in the maximizing burst buffer usage case;
-job \#438 waits 205,375 seconds in the case of maximizing number of tasks.
+Job \#435 waits 109,214 seconds in the maximizing burst buffer usage case;
+job \#438 waits 102,935 seconds in the case of maximizing number of tasks.
 Second, these jobs are requesting huge amount of compute nodes (163840 cores)
 but comparably less burst buffer (7 TB for job \#435 and 8 TB for job \#438)
 The third and the most important reason is that there are jobs requesting similarly
 large number of cores but request less running time and larger amount of burst buffer.
 For example, job \#434 also requests 163840 cores
-but its request running time is just 3600 seconds;
+but its expected running time is just 3600 seconds;
 job \#434 also requests 45 TB burst buffer.
 As a result, Cerberus, according to Equation~\ref{Equ:MaxProductRecursion},
 favors the jobs with less request time but larger burst buffer demand.
@@ -364,24 +364,22 @@ for the waiting time of 80\% jobs, is not strategy-proofness\cite{Ghodsi:NSDI:20
 
 We can see in Figure~\ref{Fig:DPvsFIFOThroughput} the throughput of system
 when scheduled by 3 different versions of Cerberus.
-For optimal Cerberus, job \#445 decides the finishing time of all 1185 jobs.
-That is 326,133 seconds for Cerberus when it maximizing data throughput
-and 316,590 seconds for Cerberus when it maximizing parallelable tasks.
-FCFS Cerberus makes system ends its last job, also job \#455, at 357,586 seconds.
+For optimized Cerberus, job \#445 decides the finishing time of all 1185 jobs.
+That is 359,606 seconds for MaxT Cerberus and 353,345 seconds for MaxP Cerberus.
+FCFS Cerberus makes system ends its last job, also job \#455, at 391,635 seconds.
 The worst case completion improvement to FCFS-style Cerberus is
-8.80\% for MaxT Cerberus and 11.46\% for MaxP Cerberus.
+8.18\% for MaxT Cerberus and 9.78\% for MaxP Cerberus.
 When we look at the time sequence of throughput,
-we found the peak value 16 jobs / 500 seconds obtained Cerberus
-when maximizing the number of parallel tasks being able to run.
-The alternative optimization method, maximizing burst buffer's usage,
-could achieve 14 jobs / 500 seconds before 20000 seconds.
-The peak throughput of FCFS Cerberus is 13 jobs / 500 seconds around 50000 seconds.
+we found the peak value 11 jobs / 500 seconds obtained by MaxP Cerberus.
+The alternative optimization method, MaxT Cerberus,
+could achieve 15 jobs / 500 seconds.
+The peak throughput of FCFS Cerberus is 12 jobs / 500 seconds around 50000 seconds.
 Mean throughputs of these 3 scheduling methods are drawn
 as bar chart in Figure~\ref{Fig:DPvsFIFOThroughput}.
 \textit{Comparing with FCFS Cerberus, MaxT Cerberus achieves
-10.41\% higher average throughput (1.835 jobs / 500 seconds)
-while MaxP Cerberus gives 13.24\% improvement (1.882 jobs / 500 seconds),
-that is, extra 2.83\% enhancement to MaxT Cerberus.}
+9.62\% higher average throughput (1.664 jobs / 500 seconds)
+while MaxP Cerberus gives 10.54\% improvement (1.678 jobs / 500 seconds)
+that is, extra 0.92\% enhancement to MaxT Cerberus.}
 
 \begin{figure}[!t]
         \centering
@@ -422,8 +420,8 @@ that is, extra 2.83\% enhancement to MaxT Cerberus.}
                 %Cerberus Version & FCFS & MaxT & MaxP \\
                 %\hline
                 %\hline
-                %Simulation Time / seconds & 6.59 & 246.87 & 207.42 \\
-                %Optimization Time / seconds & 0 & 241.11 & 201.75 \\
+                %Simulation Time / seconds & 6.59 & 246.87 & 257.42 \\
+                %Optimization Time / seconds & 0 & 241.11 & 251.75 \\
                 %Total Number of Optimizations & 0 & 8702 & 9114 \\
                 %\hline
         %\end{tabular}
@@ -439,8 +437,8 @@ that is, extra 2.83\% enhancement to MaxT Cerberus.}
                 Optimization Policy Used & MaxT Cerberus & MaxP Cerberus \\
                 \hline
                 \hline
-                Simulation Run Time / seconds & 246.87 & 207.42 \\
-                Optimization Run Time / seconds & 241.11 & 201.75 \\
+                Simulation Run Time / seconds & 246.87 & 257.42 \\
+                Optimization Run Time / seconds & 241.11 & 251.75 \\
                 Total Number of Optimizations & 8702 & 9114 \\
                 \hline
         \end{tabular}
