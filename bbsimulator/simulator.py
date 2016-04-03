@@ -12,6 +12,9 @@ class BBEventType(Enum):
     FinishIn = 2
     FinishRun = 3
     FinishOut = 4
+    ReleaseIn = 5
+    ReleaseRunCN = 6
+    ReleaseOut = 7
 
 
 class BBEvent(object):
@@ -31,6 +34,12 @@ class BBEvent(object):
             return 'Finish Run'
         elif self.evt_type == BBEventType.FinishOut:
             return 'Finish Out'
+        elif self.evt_type == BBEventType.ReleaseIn:
+            return 'Release In'
+        elif self.evt_type == BBEventType.ReleaseRun:
+            return 'Release Run'
+        elif self.evt_type == BBEventType.ReleaseOut:
+            return 'Release Out'
 
     def __str__(self):
         return "%s event[%7.2f] with %s" % \
@@ -56,7 +65,7 @@ class BBEventGeneratorBase(object):
 
 
 class BBEventGeneratorDirect(BBEventGeneratorBase):
-    """generate events with CPU and IO system resource"""
+    """generate events for 1 phase model"""
     def __init__(self, system):
         super(BBEventGeneratorDirect, self).__init__(system)
 
@@ -145,6 +154,26 @@ class BBEventGeneratorCerberus(BBEventGeneratorBase):
         job.ts.finish_out = job.ts.start_out + output_dur
         evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
         return evt
+
+    def generateReleaseInBB(self, job):
+        input_dur = job.demand.data_in / self.system.bb.to_cpu
+        job.ts.loaded = job.ts.start_run + input_dur
+        evt = BBEvent(job, job.ts.loaded, BBEventType.ReleaseIn)
+        return evt
+
+    def generateReleaseRunBB(self, job):
+        """release bb for data_run is done in FinishRun event"""
+        pass
+
+    def generateReleaseRunCN(self, job):
+        output_dur = job.demand.data_out / self.system.cpu.to_bb
+        ts = job.ts.start_out + output_dur
+        evt = BBEvent(job, ts, BBEventType.ReleaseRunCN)
+        return evt
+
+    def generateReleaseRunOut(self, job):
+        """release bb for data_out is done in FinishOut event"""
+        pass
 
     def generateEvents(self, jobs):
         """generate new events based on schedule results"""
