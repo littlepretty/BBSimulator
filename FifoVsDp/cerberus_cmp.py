@@ -99,19 +99,18 @@ if __name__ == '__main__':
                   'wait', 'response']
     figure_no = 0
     trace_reader = BBTraceReader(file_prefix + '.swf', lam=1)
-    data_range = [[1, 60, 1],
+    data_range = [[1, 30, 1],
                   [1, 60, 1],
                   [1, 60, 1]]
     data = trace_reader.patchTraceFileThreePhases(data_range, mod_submit=True)
-
     cpu = BBCpu(300000, 0.008, 0.0025)
     bb = BBBurstBuffer(4000, 0.008, 0.008)
     io = BBIo(0.0025, 0.008)
     system = BBSystemBurstBuffer(cpu, bb, io)
 
     runPlainBBScheduler()
-    runMaxParallelScheduler()
-    runMaxBBScheduler()
+    # runMaxParallelScheduler()
+    # runMaxBBScheduler()
     threePhaseSameData(data)
     onePhaseIO(data)
     onePhaseBurstBuffer(data)

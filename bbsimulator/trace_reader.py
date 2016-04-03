@@ -69,7 +69,7 @@ class BBTraceReader(object):
                                  self.data_run_hi, self.data_run_step)
             data_out = randrange(self.data_out_low,
                                  self.data_out_hi, self.data_out_step)
-            data_max = max(data_in, data_run, data_out)
+            data_max = max(data_in / 1000.0, data_run, data_out)
 
             max_random_data.append(data_max)
 
@@ -103,7 +103,7 @@ class BBTraceReader(object):
         runtime = row[3]
         num_core = row[7]
         exp_rt = row[8]
-        data_in = row[18]
+        data_in = row[18] / 1000.0
         data_run = row[19]
         data_out = row[20]
 

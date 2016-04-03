@@ -12,9 +12,8 @@ class BBEventType(Enum):
     FinishIn = 2
     FinishRun = 3
     FinishOut = 4
-    ReleaseIn = 5
+    ReleaseInBB = 5
     ReleaseRunCN = 6
-    ReleaseOut = 7
 
 
 class BBEvent(object):
@@ -34,12 +33,10 @@ class BBEvent(object):
             return 'Finish Run'
         elif self.evt_type == BBEventType.FinishOut:
             return 'Finish Out'
-        elif self.evt_type == BBEventType.ReleaseIn:
+        elif self.evt_type == BBEventType.ReleaseInBB:
             return 'Release In'
-        elif self.evt_type == BBEventType.ReleaseRun:
+        elif self.evt_type == BBEventType.ReleaseRunCN:
             return 'Release Run'
-        elif self.evt_type == BBEventType.ReleaseOut:
-            return 'Release Out'
 
     def __str__(self):
         return "%s event[%7.2f] with %s" % \
@@ -142,38 +139,37 @@ class BBEventGeneratorCerberus(BBEventGeneratorBase):
         evt = BBEvent(job, job.ts.finish_in, BBEventType.FinishIn)
         return evt
 
-    def generateFinishRun(self, job):
-        run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_bb
-        run_dur += job.demand.data_in / self.system.bb.to_cpu
-        job.ts.finish_run = job.ts.start_run + run_dur
-        evt = BBEvent(job, job.ts.finish_run, BBEventType.FinishRun)
-        return evt
-
-    def generateFinishOutput(self, job):
-        output_dur = job.demand.data_out / self.system.cpu.to_bb
-        job.ts.finish_out = job.ts.start_out + output_dur
-        evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
-        return evt
-
     def generateReleaseInBB(self, job):
         input_dur = job.demand.data_in / self.system.bb.to_cpu
-        job.ts.loaded = job.ts.start_run + input_dur
-        evt = BBEvent(job, job.ts.loaded, BBEventType.ReleaseIn)
+        job.ts.finish_mem_in = job.ts.start_run + input_dur
+        evt = BBEvent(job, job.ts.finish_mem_in, BBEventType.ReleaseInBB)
         return evt
 
     def generateReleaseRunBB(self, job):
         """release bb for data_run is done in FinishRun event"""
         pass
 
+    def generateFinishRun(self, job):
+        run_dur = job.runtime + job.demand.data_run / self.system.cpu.to_bb
+        job.ts.finish_run = job.ts.finish_mem_in + run_dur
+        evt = BBEvent(job, job.ts.finish_run, BBEventType.FinishRun)
+        return evt
+
     def generateReleaseRunCN(self, job):
         output_dur = job.demand.data_out / self.system.cpu.to_bb
-        ts = job.ts.start_out + output_dur
-        evt = BBEvent(job, ts, BBEventType.ReleaseRunCN)
+        job.ts.finish_mem_out = job.ts.start_out + output_dur
+        evt = BBEvent(job, job.ts.finish_mem_out, BBEventType.ReleaseRunCN)
         return evt
 
     def generateReleaseRunOut(self, job):
         """release bb for data_out is done in FinishOut event"""
         pass
+
+    def generateFinishOutput(self, job):
+        output_dur = job.demand.data_out / self.system.bb.to_io
+        job.ts.finish_out = job.ts.finish_mem_out + output_dur
+        evt = BBEvent(job, job.ts.finish_out, BBEventType.FinishOut)
+        return evt
 
     def generateEvents(self, jobs):
         """generate new events based on schedule results"""
@@ -186,11 +182,15 @@ class BBEventGeneratorCerberus(BBEventGeneratorBase):
                 evt = self.generateFinishInput(job)
                 events.append(evt)
             elif job.status == BBJobStatus.Running:
-                evt = self.generateFinishRun(job)
-                events.append(evt)
+                evt1 = self.generateReleaseInBB(job)
+                events.append(evt1)
+                evt2 = self.generateFinishRun(job)
+                events.append(evt2)
             elif job.status == BBJobStatus.Outputing:
-                evt = self.generateFinishOutput(job)
-                events.append(evt)
+                evt1 = self.generateReleaseRunCN(job)
+                events.append(evt1)
+                evt2 = self.generateFinishOutput(job)
+                events.append(evt2)
             else:
                 logging.warn('\t Unable to generate events for %s' % str(job))
 
@@ -360,8 +360,12 @@ class BBSimulatorCerberus(BBSimulatorBase):
                 self.scheduler.insertToInputQ(evt.job)
             elif evt.evt_type == BBEventType.FinishIn:
                 self.scheduler.insertToRunQ(evt.job)
+            elif evt.evt_type == BBEventType.ReleaseInBB:
+                self.scheduler.releaseBB(evt.job.demand.data_in)
             elif evt.evt_type == BBEventType.FinishRun:
                 self.scheduler.insertToOutputQ(evt.job)
+            elif evt.evt_type == BBEventType.ReleaseRunCN:
+                self.scheduler.releaseCN(evt.job.demand.num_core)
             elif evt.evt_type == BBEventType.FinishOut:
                 self.scheduler.insertToCompleteQ(evt.job)
             else:

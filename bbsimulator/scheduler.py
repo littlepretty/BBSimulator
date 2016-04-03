@@ -228,22 +228,26 @@ class BBSchedulerCerberus(BBSchedulerBase):
 
     def insertToRunQ(self, job):
         job.status = BBJobStatus.WaitRun
-        self.system.bb.available += job.demand.data_in
         self.run_q.append(job)
+
+    def releaseBB(self, bb):
+        self.system.bb.available += bb
+
+    def releaseCN(self, cn):
+        self.system.cpu.available += cn
 
     def insertToOutputQ(self, job):
         job.status = BBJobStatus.WaitOutput
-        self.system.cpu.available += job.demand.num_core
-        self.system.bb.available += job.demand.data_run
+        self.releaseBB(job.demand.data_run)
         self.output_q.append(job)
 
     def insertToCompleteQ(self, job):
         job.status = BBJobStatus.Complete
-        self.system.bb.available += job.demand.data_out
+        self.releaseBB(job.demand.data_out)
         self.complete_q.append(job)
 
     def scheduleStageIn(self):
-        "greedily choose jobs s.t. max|jobs| with bb constraint"
+        """allocate available resources using FCFS"""
         jobs = []
         # sort descendingly, max data throughput
         # sort ascendingly, max parallelism
@@ -256,7 +260,7 @@ class BBSchedulerCerberus(BBSchedulerBase):
         return jobs
 
     def scheduleRun(self):
-        "greedily choose jobs s.t. max|jobs| with cpu and bb constraint"
+        """allocate available resources using FCFS"""
         jobs = []
         # self.run_q.sort(key=lambda job: job.demand.num_core)
         while len(self.run_q) > 0 and \
@@ -269,7 +273,7 @@ class BBSchedulerCerberus(BBSchedulerBase):
         return jobs
 
     def scheduleStageOut(self):
-        "greedily choose jobs s.t. max|jobs| with bb constraint"
+        """allocate available resources using FCFS"""
         jobs = []
         # self.output_q.sort(key=lambda job: job.demand.data_out)
         while len(self.output_q) > 0 and \
@@ -280,15 +284,13 @@ class BBSchedulerCerberus(BBSchedulerBase):
         return jobs
 
     def scheduleCore(self, now):
-        """
-        return scheduled jobs with proper status
-        """
-        job_ins = self.scheduleStageIn()
-        for job in job_ins:
-            job.ts.start_in = now
-            job.status = BBJobStatus.Inputing
-        if not job_ins:
-            self.dumpInputQ()
+        """return scheduled jobs with proper status"""
+        job_outs = self.scheduleStageOut()
+        for job in job_outs:
+            job.ts.start_out = now
+            job.status = BBJobStatus.Outputing
+        if not job_outs:
+            self.dumpOutputQ()
 
         job_runs = self.scheduleRun()
         for job in job_runs:
@@ -297,12 +299,12 @@ class BBSchedulerCerberus(BBSchedulerBase):
         if not job_runs:
             self.dumpRunQ()
 
-        job_outs = self.scheduleStageOut()
-        for job in job_outs:
-            job.ts.start_out = now
-            job.status = BBJobStatus.Outputing
-        if not job_outs:
-            self.dumpOutputQ()
+        job_ins = self.scheduleStageIn()
+        for job in job_ins:
+            job.ts.start_in = now
+            job.status = BBJobStatus.Inputing
+        if not job_ins:
+            self.dumpInputQ()
 
         jobs = []
         jobs.extend(job_ins)
@@ -351,7 +353,7 @@ class BBSchedulerMaxBurstBuffer(BBSchedulerCerberus):
         super(BBSchedulerMaxBurstBuffer, self).__init__(system)
         self.solver = DPSolver()
 
-    def scheduleStageIn(self):
+    """def scheduleStageIn(self):
         jobs = []
         if len(self.input_q) > 0:
             logging.debug('\t Solving on input queue, %.2f' %
@@ -361,7 +363,7 @@ class BBSchedulerMaxBurstBuffer(BBSchedulerCerberus):
             for job in jobs:
                 self.system.bb.available -= job.demand.data_in
                 self.input_q.remove(job)
-        return jobs
+        return jobs"""
 
     def scheduleRun(self):
         jobs = []
@@ -394,7 +396,7 @@ class BBSchedulerMaxParallel(BBSchedulerCerberus):
         super(BBSchedulerMaxParallel, self).__init__(system)
         self.solver = DPSolver()
 
-    def scheduleStageIn(self):
+    """def scheduleStageIn(self):
         jobs = []
         if len(self.input_q) > 0:
             logging.debug('\t Solving on input queue, %.2f' %
@@ -404,7 +406,7 @@ class BBSchedulerMaxParallel(BBSchedulerCerberus):
             for job in jobs:
                 self.system.bb.available -= job.demand.data_in
                 self.input_q.remove(job)
-        return jobs
+        return jobs"""
 
     def scheduleRun(self):
         jobs = []
