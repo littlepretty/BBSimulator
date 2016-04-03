@@ -15,17 +15,20 @@ Cerberus schedules jobs in 3 distinct set/queue.
 The input queue $Q_I$ contains all the jobs that
 needs to load input data before they are able to execute.
 Once a job comes out of input queue, its data flows from external disk
-to burst buffer nodes.
+to burst buffer nodes, indicated by the red arrow.
 Compute nodes are not allocated to the application until
 data flows from burst buffer to memory on compute nodes.
 The run queue $Q_R$ contains all the jobs waiting to be run with loaded data.
+Before executing, input data must be transfered to memory on compute nodes,
+after which burst buffer used for stage-in can be released.
 When running application request checkpointing, its execution and data are
 pushed to its exclusive burst buffer nodes;
 when application resume from system fault, its checkpointing are
 loaded directly from burst buffer, instead of PFS, to compute nodes.
 The output queue $Q_O$ contains all the jobs that
 terminate execution but needs to write output data to external storage.
-Compute nodes are released by the applications in this phase;
+As soon as output data is moved from memory to burst buffer nodes allocated for stage-out,
+compute nodes can be released;
 in other words, other applications ready to run can take up them now.
 At anytime, a job can only appear in one of the 3 sets, apparently.
 This fact motivates separated scheduling idiom to be used in different phases,
@@ -41,7 +44,7 @@ or for different job queues.
 \begin{figure}[!t]
         \centering
         \includegraphics[width=3.6in]{CerberusBBSystem}
-        \caption{Scheduling Workflow of Cerberus}
+        \caption{Scheduling Workflow of Burst Buffer Aware Cerberus}
         \label{Fig:CerberusQueues}
 \end{figure}
 
