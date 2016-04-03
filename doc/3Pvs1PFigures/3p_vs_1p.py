@@ -105,8 +105,6 @@ def timePlot(prefix, column='response'):
         time1 = data1[column]
     time2 = data2[column]
     time3 = data3[column]
-    time2 = [x for x in time2 if x > 10.0]
-    time3 = [x for x in time3 if x > 10.0]
 
     sorted_time1 = np.sort(time1)
     sorted_time2 = np.sort(time2)
