@@ -12,8 +12,10 @@ class BBJobTimeStamp(object):
         self.start_in = 0.0
         self.finish_in = 0.0  # when job goes into run queue
         self.start_run = 0.0
+        self.finish_mem_in = 0.0
         self.finish_run = 0.0  # when job goes into out queue
         self.start_out = 0.0
+        self.finish_mem_out = 0.0
         self.finish_out = 0.0
 
 
