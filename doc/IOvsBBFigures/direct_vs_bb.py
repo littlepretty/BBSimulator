@@ -48,6 +48,7 @@ def cdfPlot(prefix, column='response'):
                 bbox_inches='tight')
     log.sub()
 
+
 def calculateThroughput(finish, interval):
     throughputs = []
     i = 0
@@ -103,7 +104,7 @@ def throughputPlot(prefix, delta=500.0):
     ax2.set_yticks(np.arange(0, 2.1, 0.25))
     ax1.grid()
     plt.grid()
-    plt.xlim([0, 1800000])
+    plt.xlim([0, 1400000])
     ax1.legend(loc='upper left')
     ax2.legend(loc='upper right')
     ax1.set_xlabel('Time Sequence / Seconds')
