@@ -184,7 +184,7 @@ def throughputPlot(prefix, delta=500.0):
                  label=labels[i], linewidth=3)
         i += 1
     i = 0
-    end += 20000
+    end += 50000
     ax2 = ax1.twinx()
     for avg in avgs:
         log.info('Avg Throughput of %s = %.3f' % (labels[i], avg))
