@@ -65,10 +65,10 @@ def throughputPlot(prefix, delta=500.0):
                 color=lines[i+3], label='Avg %s' % labels[i])
         i += 1
 
-    ax1.set_ylim([0, 20])
-    ax1.set_yticks(np.arange(0.0, 20.1, 2))
-    ax2.set_ylim([0, 2.4])
-    ax2.set_yticks(np.arange(0.0, 2.5, 0.24))
+    ax1.set_ylim([0, 16])
+    ax1.set_yticks(np.arange(0.0, 17, 2))
+    ax2.set_ylim([0, 2.8])
+    ax2.set_yticks(np.arange(0.0, 2.9, 0.35))
     ax1.grid()
     ax1.legend(loc='upper left', fontsize=16)
     ax2.legend(loc='upper right', fontsize=16)
