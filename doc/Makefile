@@ -16,6 +16,7 @@ FILE_NAME=bbscheduler
 .PHONY: all, clean, view
 
 all:
+	./draw_figures.sh
 	$(PDFLATEX) $(FILE_NAME).tex
 	$(BIBTEX) $(FILE_NAME).aux
 	$(PDFLATEX) $(FILE_NAME).tex
