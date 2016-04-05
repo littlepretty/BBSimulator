@@ -57,16 +57,24 @@ depends on both the model of the jobs and the experiment scenario.
 \label{Sec:Sim:DirectIOvsBB}
 In this section, we demonstrate that by utilizing burst buffer nodes,
 job scheduler could improve the performance of both applications and system.
+We compare two systems:
+\begin{itemize}
+        \item \textbf{1-Phase IO}: system without burst buffer nodes
+                scheduled by FCFS policy
+        \item \textbf{Cerberus}: system with burst buffer 
+                scheduled by our proposed Cerberus
+\end{itemize}
+
 Figure~\ref{Fig:DirectIOvsBBResponse} compares CDF of the response time of 1185 jobs.
 When scheduler can allocate burst buffer to jobs,
 response time is bounded by 376,443.12 seconds.
 However, the worst case in system without burst buffer
-(denoted as 1-Phase IO) is catastrophical.
+(1-Phase IO) is catastrophical.
 There are jobs that takes 889,239.20 seconds to finish,
 which is 2.36 times slow as the most non-responsive job
 in system equipped with burst buffer.
 In average case, \textit{nearly 99\% of the jobs scheduled by Cerberus
-response faster than 1-Phase Batch scheduler on non-BB system.}
+response faster than 1-Phase batch scheduler on non-BB system.}
 The improvement mainly comes from the difference of IO operation efficiency between
 traditional IO nodes and burst buffer nodes.
 
