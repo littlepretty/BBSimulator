@@ -18,10 +18,11 @@
                 $bb\_out_i$ & burst buffer demand of $job_i$ at stage-out phase \\
                 $rt_i$ & running time of $job_i$ \\
                 $ert_i$ & estimated or expected running time of $job_i$ \\
-                $Q_I, Q_R, Q_O$ & job queue for stage-in, running, stage-out phase respectively \\
+                $Q_I, Q_R, Q_O$ & queues for stage-in, running, stage-out phase \\
                 $J_{Q_I}, J_{Q_R}, J_{Q_O}$ & set of jobs in corresponding queue \\
                 $S$ & set of jobs selected by scheduler \\
-                $v_i$ & value of job in $J_{Q_R}$ \\
+                $v_i$ & value of $job_i \in J_{Q_R}$ defined by Equation~\ref{Equ:DefValue}\\
+                $dp(\cdot)$ & memo used in dynamic programming \\
                 \hline
         \end{tabular}
 \end{table}
