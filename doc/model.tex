@@ -1,6 +1,31 @@
 \section{System Modeling and Problem Formulation}
 \label{Sec:Model}
 
+\begin{table}[!t] 
+        \renewcommand{\arraystretch}{1.3}
+        \caption{Summary of Symbols}
+        \label{Tab:Symbols}
+        \centering
+        \begin{tabular}{l|l}
+                \hline
+                $CN$ & number of total compute nodes \\
+                $BB$ & amount of total burst buffer nodes \\
+                $CN_{available}$ & number of available compute nodes \\
+                $BB_{available}$ & amount of available burst buffer nodes \\
+                $c_i$ & compute node demand of $job_i$ \\
+                $bb\_in_i$ & burst buffer demand of $job_i$ at stage-in phase \\
+                $bb\_run_i$ & burst buffer demand of $job_i$ at running phase \\
+                $bb\_out_i$ & burst buffer demand of $job_i$ at stage-out phase \\
+                $rt_i$ & running time of $job_i$ \\
+                $ert_i$ & estimated or expected running time of $job_i$ \\
+                $Q_I, Q_R, Q_O$ & job queue for stage-in, running, stage-out phase respectively \\
+                $J_{Q_I}, J_{Q_R}, J_{Q_O}$ & set of jobs in corresponding queue \\
+                $S$ & set of jobs selected by scheduler \\
+                $v_i$ & value of job in $J_{Q_R}$ \\
+                \hline
+        \end{tabular}
+\end{table}
+
 \subsection{System Resources}
 The system contains resources like compute node, main memory, burst buffer and IO node.
 In most system architecture, compute nodes are coupled with main memory.
