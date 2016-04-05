@@ -12,15 +12,15 @@ ifeq ($(UNAME), Darwin)
 endif
 
 FILE_NAME=bbscheduler
+PDFLATEX_OPT=-file-line-error-style -interaction=nonstopmode
 
 .PHONY: all, clean, view
 
 all:
-	./draw_figures.sh
-	$(PDFLATEX) $(FILE_NAME).tex
+	$(PDFLATEX) $({PDFLATEX_OPT) $(FILE_NAME).tex
 	$(BIBTEX) $(FILE_NAME).aux
-	$(PDFLATEX) $(FILE_NAME).tex
-	$(PDFLATEX) $(FILE_NAME).tex
+	$(PDFLATEX) $({PDFLATEX_OPT) $(FILE_NAME).tex
+	$(PDFLATEX) $({PDFLATEX_OPT) $(FILE_NAME).tex
 
 view: all
 	$(VIEWER) $(FILE_NAME).pdf
