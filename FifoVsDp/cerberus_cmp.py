@@ -109,8 +109,8 @@ if __name__ == '__main__':
     system = BBSystemBurstBuffer(cpu, bb, io)
 
     runPlainBBScheduler()
-    # runMaxParallelScheduler()
-    # runMaxBBScheduler()
+    runMaxParallelScheduler()
+    runMaxBBScheduler()
     threePhaseSameData(data)
     onePhaseIO(data)
     onePhaseBurstBuffer(data)
