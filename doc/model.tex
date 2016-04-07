@@ -1,4 +1,4 @@
-\section{System Modeling and Problem Formulation}
+\section{Model for HPC Jobs on BB-Enabled System}
 \label{Sec:Model}
 
 \begin{table}[!t] 
@@ -13,16 +13,18 @@
                 $CN_{available}$ & number of available compute nodes \\
                 $BB_{available}$ & amount of available burst buffer nodes \\
                 $c_i$ & compute node demand of $job_i$ \\
-                $bb\_in_i$ & burst buffer demand of $job_i$ at stage-in phase \\
-                $bb\_run_i$ & burst buffer demand of $job_i$ at running phase \\
-                $bb\_out_i$ & burst buffer demand of $job_i$ at stage-out phase \\
+                $bb\_in_i$ & burst buffer demand of $job_i$ at \textit{stage-in} phase \\
+                $bb\_run_i$ & burst buffer demand of $job_i$ at \textit{running} phase \\
+                $bb\_out_i$ & burst buffer demand of $job_i$ at \textit{stage-out} phase \\
                 $rt_i$ & running time of $job_i$ \\
                 $ert_i$ & estimated or expected running time of $job_i$ \\
-                $Q_I, Q_R, Q_O$ & queues for stage-in, running, stage-out phase \\
+                $Q_I, Q_R, Q_O$ & queues for \textit{stage-in, running, stage-out} phase \\
                 $J_{Q_I}, J_{Q_R}, J_{Q_O}$ & set of jobs in corresponding queue \\
                 $S$ & set of jobs selected by scheduler \\
                 $v_i$ & value of $job_i \in J_{Q_R}$ defined by Equation~\ref{Equ:DefValue}\\
                 $dp(\cdot)$ & memo used in dynamic programming \\
+                $TS_{s\_x}$ & event timestamps of starting phase $x$ in simulation \\
+                $TS_{f\_x}$ & event timestamps of finishing phase $x$ in simulation \\
                 \hline
         \end{tabular}
 \end{table}
@@ -30,7 +32,7 @@
 \subsection{System Resources}
 The system contains resources like compute node, main memory, burst buffer and IO node.
 In most system architecture, compute nodes are coupled with main memory.
-Since IO capacity is more than sufficient, We assume IO nodes are always available.
+Since IO capacity at most time is sufficient, we assume IO nodes are always available.
 Therefore, the schedule targets are modeled as compute node and burst buffer.
 We consider a system with $CN$ compute nodes and $BB$ GB of burst buffer.
 Burst buffer are able to be shared by applications with any fraction of total amount.
@@ -39,23 +41,45 @@ fraction of the total resources(number of compute nodes or amount of burst buffe
 
 \subsection{Three-Phase Model for HPC Jobs}
 Users request the system to run their applications as jobs.
-We define $J = (job_1, job_2,..., job_n)$ to be the set of all jobs in the system during
-a period of time interested.
-Job consists of 3 different phases.
-In the first phases, input data are load in from IO nodes to burst buffer.
+We define $J = (job_1, job_2,..., job_n)$ to be the set of all unfinished jobs in the system.
+To fully utilizing burst buffer, we divide jobs into 3 different phases.
+In the first phases, input data are staged in from IO nodes to burst buffer.
 We refer this phase as \textit{stage-in} phase.
-It is very easy for user to provide the amount of load-in data because input data is available before application execution. 
-Then the job can run on the compute nodes when been scheduled;
-except reading data from burst buffer, there may or may not be any interaction between computer node and burst buffer.
+It is very easy for user to provide the amount of input data
+because they should already be available before application execution. 
+Then the job can run on the compute nodes after being scheduled;
+except reading data from burst buffer, there may be interaction between 
+computer node and burst buffer.
 These interactions are mainly due to fault tolerance reasons, like check-pointing.
 This phase is called \textit{running} phase.
-When computation is done, output data needs to be staged out to IO nodes from memory or burst buffer, namely \textit{stage-out} phase.
-Burst buffer plays as IO agent for compute node.
-From the view point of compute node, it uses burst buffer as IO nodes.
-For a job at the stage-in phase, compute nodes is not allocated to it yet but it will not effect reading in data.
-When scheduler allocate compute nodes to a job, these nodes are exclusively used by this job until it enters stage-out phase.
-Compute nodes are release as soon as computation is done, meaning they are available for jobs waiting to be run.
-Staging output data out to IO node is the business just between burst buffer and IO nodes.
+When computation is done, output data needs to be staged out to external PFS from memory,
+namely \textit{stage-out} phase.
+Burst buffer plays as an efficient IO broker for compute nodes,
+in replacing of traditional IO nodes.
+
+The tightly coupling between processing cores and memory makes 3-phase model
+more complicated than it appears in terms of resource releasing.
+For a job at the stage-in phase, compute nodes is not allocated to it yet
+but that will not effect staging in data.
+When scheduler allocate compute nodes (coupled with memory) to a job,
+these nodes are exclusively used by this job.
+The first thing to do in running phase is fetching in data from burst buffer to memory,
+which is not available until compute nodes is allocated to job.
+We refer this sub-phase as \textit{fectch-in} phase.
+Burst buffers used in \textit{stage-in} phase will be hold by job
+until \textit{fetch-in} phase finished.
+Even if the computation is done when job exit \textit{running phase},
+compute nodes cannot be released until job enters \textit{stage-out} phase 
+\textbf{and} output data are drained out to burst buffer from memory,
+referred as \textit{drain-out} phase.
+However, burst buffer used for checkpointing during job execution
+can be immediately reclaimed at the end of \textit{running phase}.
+Once \textit{drain-out} phase is done,
+compute nodes become available for jobs waiting to be run
+because staging output data out to IO node is the business of burst buffer nodes,
+sometimes with the help from traditional IO nodes.
+Burst buffer nodes used for caching output data can thus be put back for reuse
+when \textit{stage-out} phase, as well as the entire lifetime of job, concludes.
 
 
 \subsection{Three-Phase Resource Demand}
@@ -68,7 +92,7 @@ To be burst buffer aware, demand vector should be augmented
 with fields defining user's request for burst buffer capacity.
 We consider two possible ways to do so.
 Corresponding to the typical usage cases of burst buffer,
-user may provide a \textit{burst buffer triple} $(bb\_in, bb\_run, bb\_out)$,
+user may provide a \textit{burst buffer triple} in the form of $(bb\_in, bb\_run, bb\_out)$,
 where $bb\_in$ is the volume of burst buffer user predicted for staging in data files,
 $bb\_run$ is the volume of burst buffer user preferred for checkpointing during running,
 $bb\_out$ is the volume of burst buffer needed to hold the resulting output data.
