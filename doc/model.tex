@@ -37,11 +37,11 @@ Therefore, the schedule targets are modeled as compute node and burst buffer.
 We consider a system with $CN$ compute nodes and $BB$ GB of burst buffer.
 Burst buffer are able to be shared by applications with any fraction of total amount.
 Later we will see that when doing optimal scheduling, we may need to allocate by a fixed
-fraction of the total resources(number of compute nodes or amount of burst buffer).
+fraction of the total resources (number of compute nodes or amount of burst buffer).
 
 \subsection{Three-Phase Model for HPC Jobs}
 Users request the system to run their applications as jobs.
-We define $J = (job_1, job_2,..., job_n)$ to be the set of all unfinished jobs in the system.
+We define $J = (job_1, job_2, \ldots, job_n)$ to be the set of all unfinished jobs in the system.
 To fully utilizing burst buffer, we divide jobs into 3 different phases.
 In the first phases, input data are staged in from IO nodes to burst buffer.
 We refer this phase as \textit{stage-in} phase.

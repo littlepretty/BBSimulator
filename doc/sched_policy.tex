@@ -172,9 +172,10 @@ to be used online by scheduler.
 In practice, we could reduce the time complexity by allocating resource
 in a coarser granularity.
 For example, jobs usually asks for compute node in the unit of $cn\_unit = 512$ nodes;
-their demands for burst buffer nodes are usually in the unit of $bb\_unit = 100$ GB.
+demands for burst buffer nodes on checkpointing and output are
+usually in the unit of $bb\_unit = 1$ TB.
 We can divide both $CN$ and $c_i$ by $cn\_unit$;
-divide both $BB$ and $bb\_in, bb\_run, bb\_out$ by $bb\_unit$.
+divide both $BB$ and $bb\_run, bb\_out$ by $bb\_unit$.
 It is also possible to reduce the value of $n$, the number of jobs in the queue.
 For example, we can consider only $\frac{1}{\alpha}n$ jobs in the queue.
 This will give us only the partial optimal solution
