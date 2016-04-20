@@ -191,7 +191,12 @@
 
 % *** SPECIALIZED LIST PACKAGES ***
 %
-\usepackage{algorithmic}
+%\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{mathrsfs}
 % algorithmic.sty was written by Peter Williams and Rogerio Brito.
 % This package provides an algorithmic environment fo describing algorithms.
 % You can use the algorithmic environment in-text or within a figure
@@ -396,6 +401,8 @@ Email: \{dong.jin, lan\}@iit.edu
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
+%======================
+%=== V1, deprecated ===
 %In the world full of Big Data, moderate I/O system drastically slows down the overall execution time of computational scientific applications.
 %Burst buffer nodes comes to rescue by providing higher both average and perceived bandwidth.
 %In this paper, we model the execution of typical scientific applications that generates tens and hundreds of TBytes of data
@@ -418,22 +425,46 @@ Email: \{dong.jin, lan\}@iit.edu
 %2) our 3-phase model and dynamic programming solutions further
 %improve burst buffer equipped system.
 
-Burst buffer(BB) nodes are drastically improving
+%======================
+%=== V2, deprecated ===
+%Burst buffer(BB) nodes are drastically improving
+%the performance of computational application by providing high perceived IO bandwidth.
+%In this paper, we model the execution of typical scientific applications
+%that generates tens of TBytes of data on super computer equipped with BB.
+%We characterize generic applications by 3 phases:
+%\textit{data stage-in} phase, \textit{running} phase, and \textit{data stage-out} phase.
+%The novel 3-phase BB aware batch scheduler \textit{Cerberus}
+%allocate resources in different phases separately.
+%In both data stage input and output phase, it is possible to
+%maximize data transfer throughput or task parallelism when allocating BB resources.
+%In the running phase, we maximize the profit of scheduled tasks.
+%We simulate Cerberus scheduling the Trinity supercomputing platform to demonstrate that
+%1) burst buffer nodes can accelerate the execution pipeline of all tasks,
+%thus improving the task response time
+%2) our 3-phase model and dynamic programming solutions further
+%benefit burst buffer equipped system.
+
+Burst buffer nodes(BB) are drastically improving
 the performance of computational application by providing high perceived IO bandwidth.
+However, traditional batch scheduler either barely knows BB's existence
+or cannot fully utilize them in practice.
 In this paper, we model the execution of typical scientific applications
 that generates tens of TBytes of data on super computer equipped with BB.
-We characterize generic applications by 3 phases:
-\textit{data stage-in} phase, \textit{running} phase, and \textit{data stage-out} phase.
-The novel 3-phase BB aware batch scheduler \textit{Cerberus}
-allocate resources in different phases separately.
-In both data stage input and output phase, it is possible to
-maximize data transfer throughput or task parallelism when allocating BB resources.
-In the running phase, we maximize the profit of scheduled tasks.
-We simulate Cerberus scheduling the Trinity supercomputing platform to demonstrate that
-1) burst buffer nodes can accelerate the execution pipeline of all tasks,
-thus improving the task response time
-2) our 3-phase model and dynamic programming solutions further
-benefit burst buffer equipped system.
+We characterize generic applications to 3 phases:
+\textit{data stage-in}, \textit{running}, and \textit{data stage-out} phase.
+We develop a novel 3-phase BB aware batch scheduler \textit{Cerberus}
+managing resources in different phases separately.
+In both data stage input and output phase, Cerberus
+allocates BB resources so that data transfer throughput
+between BB and external storage system is maximized.
+In the running phase, it maximizes the profit of scheduled tasks.
+Simulation results of Cerberus scheduling the
+BB-enabled supercomputer platform demonstrates that
+1) comparing to non-BB system, 
+Cerberus accelerates the execution pipeline of all tasks by utilizing BB,
+reducing the response time of 99\% jobs;
+2) on BB-enabled system, 3-phase Cerberus and BB oriented optimization
+together further improve average system throughput by 62.31\%.
 \end{abstract}
 
 % no keywords

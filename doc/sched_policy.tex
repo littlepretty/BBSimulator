@@ -221,3 +221,85 @@ in exchange of less computation complexity.
         \end{align}
 \end{strip}
 
+
+\algrenewcommand{\algorithmiccomment}[1]{\hskip1em$/*$ #1 $*/$}
+
+\begin{algorithm}[t]
+\caption{Maximize Data Transfer of Jobs in $Q_I$ or $Q_O$}
+\label{Alg-MaxBB}
+\begin{algorithmic}[1]
+        \State $\boldsymbol{bb} \gets $ burst buffer demands of $J_Q = (j_1, j_2,\ldots, j_N)$
+        \State $\boldsymbol{dp} \gets 0_{(N+1) \times (BB+1)}$
+        \State $\mathcal{J} \gets \emptyset$
+        \Function{FillInMemo}{}
+                \For{$i \gets 1, N$}
+                        \For{$w \gets 1, BB$}
+                                \If{$w \geq bb_i$}
+                                        \State $dp(i, w) \gets \max\{dp(i-1, w-bb_i)+bb_i, dp(i-1, w)\}$
+                                \Else
+                                        \State $dp(i,w) \gets dp(i-1,w)$
+                                \EndIf
+                        \EndFor
+                \EndFor
+                \State \Call{TrackBackJobs}{$N, BB$}
+        \EndFunction
+        \\
+        \Function{TrackBackJobs}{$i, w$}
+                \If{$i > 0$}
+                        \If{$w \geq bb_i$}
+                                \If{$dp(i-1, w-bb_i) + bb_i \geq dp(i-1, w)$}
+                                        \State $\mathcal{J} = \mathcal{J} \cup j_i$
+                                        \State \Call{TrackBackJobs}{$i-1, w-bb_i$}
+                                \Else
+                                        \State \Call{TrackBackJobs}{$i-1, w$}
+                                \EndIf
+                        \Else
+                                \State \Call{TrackBackJobs}{$i-1, w$}
+                        \EndIf
+                \EndIf
+        \EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{Maximize Profit of Jobs in $Q_R$}
+\label{Alg-MaxCPU}
+\begin{algorithmic}[1]
+        \State $\boldsymbol{bb} \gets $ burst buffer demands of $J_Q = (j_1, j_2,\ldots, j_N)$
+        \State $\boldsymbol{cpu} \gets $ compute nodes demands of $j \in J_Q$
+        \State $\boldsymbol{dp} \gets 0_{(N+1) \times (CN) \times (BB+1)}$
+        \State $\boldsymbol{v} \gets$ values of $j \in J_Q$
+        \State $\mathcal{J} \gets \emptyset$
+        \Function{FillInMemo}{}
+                \For{$i \gets 1, N$}
+                        \For{$c \gets 1, CN$} 
+                                \For{$w \gets 1, BB$}
+                                        \If{$c \geq cpu_i$ and $w \geq bb_i$}
+                                                \State $dp(i, c, w) \gets \max\{dp(i-1, c-cpu_i, w-bb_i)+v_i, dp(i-1, c, w)\}$
+                                        \Else
+                                                \State $dp(i,c,w) \gets dp(i-1,c,w)$
+                                        \EndIf
+                                \EndFor
+                        \EndFor
+                \EndFor
+                \State \Call{TrackBackJobs}{$N, CN, BB$}
+        \EndFunction
+        \\
+        \Function{TrackBackJobs}{$i, c, w$}
+                \If{$i > 0$}
+                        \If{$c \geq cpu_i$ and $w \geq bb_i$}
+                                \If{$dp(i-1, c-cpu_i, w-bb_i) + v_i \geq dp(i-1, c, w)$}
+                                        \State $\mathcal{J} = \mathcal{J} \cup j_i$
+                                        \State \Call{TrackBackJobs}{$i-1, c-cpu_i, w-bb_i$}
+                                \Else
+                                        \State \Call{TrackBackJobs}{$i-1, c, w$}
+                                \EndIf
+                        \Else
+                                \State \Call{TrackBackJobs}{$i-1, c, w$}
+                        \EndIf
+                \EndIf
+        \EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+
