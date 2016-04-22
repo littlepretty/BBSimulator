@@ -36,13 +36,13 @@ def throughputPlot(prefix, delta=500.0):
     hatches = ['/', '\\', '-']
     all_data = [data1, data2, data3]
     avgs = []
-    i = 0
+    stdevs = []
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     figure_no += 1
     width = 40000
     end = -1
-    for data in all_data:
+    for (i, data) in enumerate(all_data):
         finish = data['complete']
         finish = np.sort(finish)
         log.info('Ending time of %s = %.2f' % (labels[i], finish[-1]))
@@ -52,17 +52,17 @@ def throughputPlot(prefix, delta=500.0):
         log.info('Max throughput of %s = %.3f' %
                  (labels[i], np.max(throughputs)))
         avgs.append(np.mean(throughputs))
-
+        stdevs.append(np.std(throughputs))
         ax1.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
-        i += 1
         end = max(end, intervals[-1])
-    i = 0
     end += 50000
-    for avg in avgs:
+    for (i, avg) in enumerate(avgs):
         log.info('Avg Throughput of %s = %.3f' % (labels[i], avg))
-        ax2.bar(end + width * i, avg, width, hatch=hatches[i],
-                color=lines[i+3], label='Avg %s' % labels[i])
+        log.info('Stdev Throughput of %s = %.3f' % (labels[i], stdevs[i]))
+        ax2.bar(end + width * i, avg, width,  # yerr=stdevs[i],
+                hatch=hatches[i], color=lines[i+3],
+                label='Avg %s' % labels[i])
         i += 1
 
     ax1.set_ylim([0, 16])
@@ -124,15 +124,13 @@ def cdfPlot(prefix, column='wait'):
     figure_no += 1
     labels = ['FCFS Cerberus', 'MaxT Cerberus', 'MaxP Cerberus']
     lines = ['b-', 'r:', 'g--']
-    i = 0
-    for data in [data1, data2, data3]:
+    for (i, data) in enumerate([data1, data2, data3]):
         time = data[column]
         sorted_time = np.sort(time)
         log.info('%s\'s %s = %.2f' % (labels[i], column, sorted_time[-1]))
         yvals = np.arange(len(sorted_time))/float(len(sorted_time))
         plt.plot(sorted_time, yvals*100, lines[i],
                  label=labels[i], linewidth=3)
-        i += 1
     plt.ylim([0, 101])
     plt.grid()
     plt.xlabel('Time Duration / Seconds')
