@@ -163,6 +163,7 @@ def throughputPlot(prefix, delta=500.0):
                           skip_header=1, names=first_row3)
     all_data = [data1, data2, data3]
     avgs = []
+    stdevs = []
     lines = ['b:', 'r:', 'g:', 'b', 'r', 'g']
     labels = ['1-Phase BB', '1D Cerberus', 'Cerberus']
     hatches = ['/', '\\', '-']
@@ -170,7 +171,7 @@ def throughputPlot(prefix, delta=500.0):
     i = 0
     end = -1
     fig, ax1 = plt.subplots()
-    for data in all_data:
+    for (i, data) in enumerate(all_data):
         finish = data['complete']
         finish = np.sort(finish)
         latest_finish = finish.max()
@@ -179,19 +180,18 @@ def throughputPlot(prefix, delta=500.0):
         log.info('Max Throughput of %s = %.3f' %
                  (labels[i], np.max(throughputs)))
         avgs.append(np.mean(throughputs))
+        stdevs.append(np.std(throughputs))
         end = max(end, intervals[-1])
         ax1.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
-        i += 1
-    i = 0
     end += 50000
     ax2 = ax1.twinx()
-    for avg in avgs:
+    for (i, avg) in enumerate(avgs):
         log.info('Avg Throughput of %s = %.3f' % (labels[i], avg))
-
-        ax2.bar(end + i*width, avg, width, color=lines[i+3],
-                label='Avg %s' % labels[i], hatch=hatches[i])
-        i += 1
+        log.info('Stdev Throughput of %s = %.3f' % (labels[i], stdevs[i]))
+        ax2.bar(end + i*width, avg, width,  # yerr=stdevs[i],
+                color=lines[i+3], label='Avg %s' % labels[i],
+                hatch=hatches[i])
     ax1.legend(loc='upper left', fontsize=16)
     ax2.legend(loc='upper right', fontsize=16)
     ax1.set_xlabel('Time Sequence / Seconds')
