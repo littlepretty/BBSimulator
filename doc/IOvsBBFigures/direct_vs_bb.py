@@ -72,6 +72,7 @@ def throughputPlot(prefix, delta=500.0):
                           skip_header=1, names=first_row3)
     all_data = [data1, data2]
     avgs = []
+    stdevs = []
     lines = ['b:', 'r-.', 'b', 'r']
     labels = ['1-Phase IO', 'Cerberus']
     hatches = ['/', '\\', '-']
@@ -89,16 +90,17 @@ def throughputPlot(prefix, delta=500.0):
         end = max(end, intervals[-1])
         throughputs = calculateThroughput(finish, intervals)
         avgs.append(np.mean(throughputs))
+        stdevs.append(np.std(throughputs))
         ax1.plot(intervals[1:], throughputs, lines[i],
                  label=labels[i], linewidth=3)
         i += 1
-    i = 0
     end += 180000
-    for avg in avgs:
+    for (i, avg) in enumerate(avgs):
         log.info('Avg Throughput %s = %.3f' % (labels[i], avg))
-        ax2.bar(end + width * i, avg, width, hatch=hatches[i],
-                color=lines[i+2], label='Avg %s' % labels[i])
-        i += 1
+        log.info('Stdev Throughput %s = %.3f' % (labels[i], stdevs[i]))
+        ax2.bar(end + width * i, avg, width,  # yerr=stdevs[i],
+                hatch=hatches[i], color=lines[i+2],
+                label='Avg %s' % labels[i])
     ax1.set_ylim([0, 16])
     ax2.set_ylim([0, 2.0])
     ax2.set_yticks(np.arange(0, 2.1, 0.25))
